@@ -1,0 +1,139 @@
+# BEGIN Cache Using Gzip
+AddDefaultCharset UTF-8
+
+<IfModule mod_mime.c>
+	AddCharset UTF-8 .atom .css .js .json .rss .vtt .xml
+</IfModule>
+
+<IfModule mod_headers.c>
+	Header set X-Powered-By "https://wpgzipcache.com"
+	Header unset ETag
+</IfModule>
+
+FileETag None
+
+<IfModule mod_alias.c>
+
+	<FilesMatch "\.(html|htm|rtf|rtx|txt|xsd|xsl|xml)$">
+		<IfModule mod_headers.c>
+			Header unset Pragma
+			Header append Cache-Control "public"
+			Header unset Last-Modified
+		</IfModule>
+	</FilesMatch>
+
+	<FilesMatch "\.(css|htc|js|asf|asx|wax|wmv|wmx|avi|bmp|class|divx|doc|docx|eot|exe|gif|gz|gzip|ico|jpg|jpeg|jpe|json|mdb|mid|midi|mov|qt|mp3|m4a|mp4|m4v|mpeg|mpg|mpe|mpp|otf|odb|odc|odf|odg|odp|ods|odt|ogg|pdf|png|pot|pps|ppt|pptx|ra|ram|svg|svgz|swf|tar|tif|tiff|ttf|ttc|wav|wma|wri|xla|xls|xlsx|xlt|xlw|zip)$">
+		
+		<IfModule mod_headers.c>
+			Header unset Pragma
+			Header append Cache-Control "public"
+		</IfModule>
+	</FilesMatch>
+
+</IfModule>
+
+<IfModule mod_expires.c>
+	ExpiresActive on
+	ExpiresDefault                              "access plus 1 month"
+	ExpiresByType text/cache-manifest           "access plus 0 seconds"
+	ExpiresByType text/html                     "access plus 0 seconds"
+	ExpiresByType text/xml                      "access plus 0 seconds"
+	ExpiresByType application/xml               "access plus 0 seconds"
+	ExpiresByType application/json              "access plus 0 seconds"
+	ExpiresByType application/rss+xml           "access plus 1 hour"
+	ExpiresByType application/atom+xml          "access plus 1 hour"
+	ExpiresByType image/x-icon                  "access plus 1 week"
+	ExpiresByType image/gif                     "access plus 4 months"
+	ExpiresByType image/png                     "access plus 4 months"
+	ExpiresByType image/jpeg                    "access plus 4 months"
+	ExpiresByType image/webp                    "access plus 4 months"
+	ExpiresByType video/ogg                     "access plus 4 months"
+	ExpiresByType audio/ogg                     "access plus 4 months"
+	ExpiresByType video/mp4                     "access plus 4 months"
+	ExpiresByType video/webm                    "access plus 4 months"
+	ExpiresByType text/x-component              "access plus 1 month"
+	ExpiresByType font/ttf                      "access plus 4 months"
+	ExpiresByType font/otf                      "access plus 4 months"
+	ExpiresByType font/woff                     "access plus 4 months"
+	ExpiresByType font/woff2                    "access plus 4 months"
+	ExpiresByType image/svg+xml                 "access plus 1 month"
+	ExpiresByType application/vnd.ms-fontobject "access plus 1 month"
+	ExpiresByType text/css                      "access plus 1 year"
+	ExpiresByType application/javascript        "access plus 1 year"
+</IfModule>
+
+<IfModule mod_deflate.c>
+
+	SetOutputFilter DEFLATE
+
+	<IfModule mod_setenvif.c>
+		<IfModule mod_headers.c>
+			SetEnvIfNoCase ^(Accept-EncodXng|X-cept-Encoding|X{15}|~{15}|-{15})$ ^((gzip|deflate)\s*,?\s*)+|[X~-]{4,13}$ HAVE_Accept-Encoding
+			RequestHeader append Accept-Encoding "gzip,deflate" env=HAVE_Accept-Encoding
+			SetEnvIfNoCase Request_URI \.(?:gif|jpe?g|png|rar|zip|exe|flv|mov|wma|mp3|avi|swf|mp?g|mp4|webm|webp|pdf)$ no-gzip dont-vary
+		</IfModule>
+	</IfModule>
+
+	<IfModule mod_filter.c>
+		AddOutputFilterByType DEFLATE application/atom+xml \
+		application/javascript \
+		application/json \
+		application/rss+xml \
+		application/vnd.ms-fontobject \
+		application/x-font-ttf \
+		application/xhtml+xml \
+		application/xml \
+		font/opentype \
+		image/svg+xml \
+		image/x-icon \
+		text/css \
+		text/html \
+		text/plain \
+		text/x-component \
+		text/xml
+	</IfModule>
+
+	<IfModule mod_headers.c>
+		Header append Vary: Accept-Encoding
+	</IfModule>
+</IfModule>
+
+<IfModule mod_mime.c>
+	AddType text/html .html_gz
+	AddEncoding gzip .html_gz
+</IfModule>
+
+<IfModule mod_setenvif.c>
+	SetEnvIfNoCase Request_URI \.html_gz$ no-gzip
+</IfModule>
+
+<IfModule mod_rewrite.c>
+	RewriteEngine On
+	RewriteBase /
+	RewriteCond %{HTTPS} on [OR]
+	RewriteCond %{SERVER_PORT} ^443$ [OR]
+	RewriteCond %{HTTP:X-Forwarded-Proto} https
+	RewriteRule .* - [E=GZ_SSL:-https]
+	RewriteCond %{HTTP:Accept-Encoding} gzip
+	RewriteRule .* - [E=GZ_ENC:_gz]
+	RewriteCond %{HTTP_HOST} ^([^:]+)(:[0-9]+)?$
+	RewriteRule .* - [E=GZ_HOST:%1]
+	RewriteCond %{REQUEST_METHOD} GET
+	RewriteCond %{QUERY_STRING} =""
+	RewriteCond %{HTTP:Cookie} !(wordpress_logged_in_.+|wp-postpass_|wptouch_switch_toggle|comment_author_|comment_author_email_) [NC]
+	RewriteCond %{REQUEST_URI} !^(/(.+/)?feed/?.+/?|/(?:.+/)?embed/|/(index\.php/)?wp\-json(/.*|$))$ [NC]
+	RewriteCond %{HTTP_USER_AGENT} !^(facebookexternalhit).* [NC]
+	RewriteCond "%{DOCUMENT_ROOT}/wp-content/cugz_gzip_cache/%{ENV:GZ_HOST}%{REQUEST_URI}/index%{ENV:GZ_SSL}.html%{ENV:GZ_ENC}" -f
+	RewriteRule .* "/wp-content/cugz_gzip_cache/%{ENV:GZ_HOST}%{REQUEST_URI}/index%{ENV:GZ_SSL}.html%{ENV:GZ_ENC}" [L]
+</IfModule>
+# END Cache Using Gzip
+
+# BEGIN WordPress
+RewriteEngine On
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+RewriteBase /
+RewriteRule ^index\.php$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.php [L]
+# END WordPress
