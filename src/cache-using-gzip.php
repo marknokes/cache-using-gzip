@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Cache Using Gzip
- * Version: 2.4
+ * Version: 2.5
  * Description: Creates gzipped files on your server to immensly improve page speed for site visitors
  * Author: Cache Using Gzip
  * Author URI: https://wpgzipcache.com
@@ -34,4 +34,4 @@ define('CUGZ_PERMISSIONS', class_exists('\CUGZ\GzipCachePermissions'));
 
 $GzipCachePermissions = CUGZ_PERMISSIONS ? new \CUGZ\GzipCachePermissions(): NULL;
 
-new \CUGZ\GzipCache();
+$GzipCache = \CUGZ\GzipCache::get_instance();

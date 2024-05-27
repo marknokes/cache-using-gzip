@@ -6,6 +6,8 @@ use Automattic\WooCommerce\Utilities\FeaturesUtil;
 
 class GzipCache
 {
+	public static $instance = NULL;
+
 	public static $options = [
 		'cugz_plugin_post_types' => [
 			'name' => 'Cache these types:',
@@ -85,6 +87,25 @@ class GzipCache
 
         $this->cugz_add_filters();
 	}
+
+	public static function get_instance()
+	{
+        if (!isset(self::$instance)) {
+
+            self::$instance = new self();
+
+        }
+
+        return self::$instance;
+    }
+
+    public function __clone() 
+    {
+    }
+
+    public function __wakeup()
+    {
+    }
 
 	protected function cugz_add_actions()
     {
@@ -291,6 +312,8 @@ class GzipCache
 
 			case 'publish':
 
+				if('product' === $post->post_type) break;
+
 				$url = get_permalink($post);
 
 				if($url === "$this->site_url/") {
@@ -317,16 +340,21 @@ class GzipCache
 			$this->cugz_refresh_archives($post);
 
 		}
-
 	}
 
 	public function cugz_refresh_archives($post)
 	{
+		global $GzipCachePermissions;
+
 		$this->cugz_cache_home_page();
 
 		$this->cugz_cache_blog_page();
 
-		$this->cugz_cache_shop_page();
+		if (isset($GzipCachePermissions)) {
+
+			$GzipCachePermissions->cugz_cache_shop_page();
+		
+		}
 
 	    foreach ($this->cugz_get_links($post) as $url)
 	    {
@@ -640,20 +668,6 @@ class GzipCache
 		if($blog_page_id = get_option('page_for_posts')) {
 
 			$url = get_permalink($blog_page_id);
-
-			if($dir = $this->cugz_create_folder_structure_from_url($url)) {
-						
-				$this->cugz_cache_page($url, $dir);
-
-	    	}
-		}
-	}
-
-	public function cugz_cache_shop_page()
-	{
-		if(function_exists('wc_get_page_id')) {
-
-			$url = get_permalink(wc_get_page_id('shop'));
 
 			if($dir = $this->cugz_create_folder_structure_from_url($url)) {
 						
