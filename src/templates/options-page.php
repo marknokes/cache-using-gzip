@@ -2,7 +2,7 @@
 
 <div class="flex-container">
 
-	<div class="wrap">
+	<div class="cugz-wrap">
 
 		<h2>Cache Using Gzip Settings</h2>
 
@@ -97,7 +97,7 @@
 		</form>
 	</div>
 	<?php if(!CUGZ_PERMISSIONS) { ?>
-	<div class="wrap">
+	<div class="cugz-wrap">
 		<div class="go-pro">
 			<h2>Upgrading to <span class="pro-name">Cache Using Gzip Pro</span> gives you these added features:</h2>
 			<ul>
