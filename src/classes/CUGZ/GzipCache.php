@@ -53,6 +53,7 @@ class GzipCache
 	public static $learn_more = "https://wpgzipcache.com/";
 
 	public $post_types_array = [],
+		   $cugz_inline_js_css,
 		   $host,
 		   $cache_dir = "",
 		   $site_url = "",
@@ -76,6 +77,8 @@ class GzipCache
 		$plugin_post_types = get_option('cugz_plugin_post_types') ?: ['post_types' => ['']];
 
 		$this->post_types_array = $plugin_post_types['post_types'];
+
+		$this->cugz_inline_js_css = get_option('cugz_inline_js_css');
 
 		$this->host = getenv('HTTP_HOST');
 
@@ -593,7 +596,7 @@ class GzipCache
 
 	    $html = wp_remote_retrieve_body($response);
 
-		if("1" === get_option('cugz_inline_js_css')) {
+		if("1" === $this->cugz_inline_js_css) {
         
 			$html = $this->cugz_parse_html($html);
 
