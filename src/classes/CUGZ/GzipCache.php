@@ -565,14 +565,6 @@ class GzipCache
 
 	public function cugz_cache_page($url, $dir = "")
 	{
-		global $GzipCachePermissions;
-
-		if (isset($GzipCachePermissions) && $GzipCachePermissions->cugz_never_cache($url)) {
-
-			return false;
-
-		}
-
 		global $wp_filesystem;
 
 		$dir = $dir ?: $this->cache_dir;
