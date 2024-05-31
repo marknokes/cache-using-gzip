@@ -105,7 +105,7 @@
 				<li>A cache link on posts and pages let you cache individual items on the fly</li>
 				<li>Cache WooCommerce products and product category/tag archives</li>
 				<li>Exclude a list of page slugs from ever being cached</li>
-				<li>Use on as many websites as you like</li>
+				<li>Specify a date before which items will not be cached</li>
 			</ul>
 			<a class="button button-primary" target="_blank" rel="noopener" href="<?php echo esc_url(self::$learn_more); ?>">Learn more</a>
 		</div>

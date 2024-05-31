@@ -4,7 +4,7 @@ Tags: gzip, cache, speed, performance, nginx
 Requires at least: 6.4.3
 Tested up to: 6.5.3
 Requires PHP: 7.2
-Stable tag: 2.5
+Stable tag: 2.6
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -54,5 +54,5 @@ Automatic updates should work generally smoothly, but we still recommend you bac
 
 == Changelog ==
 
-= 2.5 =
+= 2.6 =
 * Initial release.
