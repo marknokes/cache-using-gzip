@@ -2,8 +2,6 @@
 
 namespace CUGZ;
 
-use Automattic\WooCommerce\Utilities\FeaturesUtil;
-
 class GzipCache
 {
 	public static $instance = NULL;
@@ -371,11 +369,10 @@ class GzipCache
 
 	public function cugz_wc_declare_compatibility()
 	{
-		if (class_exists(FeaturesUtil::class)) {
+		if (class_exists(\Automattic\WooCommerce\Utilities\FeaturesUtil::class)) {
 
-			FeaturesUtil::declare_compatibility('custom_order_tables', CUGZ_PLUGIN_PATH);
-
-			FeaturesUtil::declare_compatibility('product_block_editor', CUGZ_PLUGIN_PATH);
+			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', CUGZ_PLUGIN_PATH);
+			
 		}
 	}
 
