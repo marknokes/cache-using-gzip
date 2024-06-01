@@ -20,7 +20,7 @@ your posts and pages will be delivered to site visitors blazingly fast!
 
 = Where can I report bugs? =
 
-Please report confirmed bugs on the Cache Using Gzip [github](https://github.com/marknokes/cache-using-gzip/issues/new) directly. Include any screenshots and as much detail as possible.
+Please report confirmed bugs on the Cache Using Gzip [github](https://github.com/marknokes/cache-using-gzip/issues/new?assignees=marknokes&labels=bug&template=bug_report.md) directly. Include any screenshots and as much detail as possible.
 
 = On what web servers can this plugin be installed =
 
@@ -47,6 +47,7 @@ download the required configuration from the plugin settings page.
 == Screenshots ==
 
 1. Main settings screen
+2. Single page cache link (pro feature)
 
 == Upgrade Notice ==
 
