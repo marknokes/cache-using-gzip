@@ -6,6 +6,10 @@ class GzipCache
 {
 	public static $instance = NULL;
 
+	public static $options_group = "cugz_options_group";
+
+	public static $learn_more = "https://wpgzipcache.com/";
+
 	public static $options = [
 		'cugz_plugin_post_types' => [
 			'name' => 'Cache these types:',
@@ -45,34 +49,41 @@ class GzipCache
             'default_value' => 0
         ]
 	];
-	
-	public static $options_group = "cugz_options_group";
 
-	public static $learn_more = "https://wpgzipcache.com/";
-
-	public $post_types_array = [],
+	public $post_types_array,
 		   $cugz_inline_js_css,
 		   $host,
-		   $cache_dir = "",
-		   $site_url = "",
-		   $plugin_version = "",
-		   $settings_url;
+		   $cache_dir,
+		   $site_url,
+		   $plugin_version,
+		   $plugin_name,
+		   $settings_url,
+		   $zlib_enabled = true;
 
 	public function __construct()
 	{
+		if (!extension_loaded('zlib')) {
+
+			$this->zlib_enabled = false;
+
+		    set_transient('cugz_notice_zlib', true, 10);
+
+		    add_action('admin_notices', [$this, 'cugz_notice_zlib']);
+
+		}
+
+		$plugin_post_types = get_option('cugz_plugin_post_types') ?: ['post_types' => ['']];
+
 		$plugin_data = get_file_data(CUGZ_PLUGIN_PATH, [
             'Version' => 'Version',
+            'Name'    => 'Plugin Name'
         ], 'plugin');
 
         $this->plugin_version = $plugin_data['Version'];
 
+        $this->plugin_name = $plugin_data['Name'];
+
 		$this->site_url = get_site_url();
-
-		register_activation_hook(CUGZ_PLUGIN_PATH, [$this, 'cugz_plugin_activation']);
-
-        register_deactivation_hook(CUGZ_PLUGIN_PATH, [$this, 'cugz_plugin_deactivation']);
-
-		$plugin_post_types = get_option('cugz_plugin_post_types') ?: ['post_types' => ['']];
 
 		$this->post_types_array = $plugin_post_types['post_types'];
 
@@ -83,6 +94,10 @@ class GzipCache
 		$this->cache_dir = strtok(WP_CONTENT_DIR . "/cugz_gzip_cache/" . $this->host, ':');
 
 		$this->settings_url = admin_url('options-general.php?page=cugz_gzip_cache');
+
+		register_activation_hook(CUGZ_PLUGIN_PATH, [$this, 'cugz_plugin_activation']);
+
+        register_deactivation_hook(CUGZ_PLUGIN_PATH, [$this, 'cugz_plugin_deactivation']);
 
 		$this->cugz_add_actions();
 
@@ -100,21 +115,15 @@ class GzipCache
         return self::$instance;
     }
 
-    public function __clone() 
-    {
-    }
+    public function __clone() {}
 
-    public function __wakeup()
-    {
-    }
+    public function __wakeup() {}
 
 	protected function cugz_add_actions()
     {
     	add_action('init', [$this, 'cugz_get_filesystem']);
 
     	add_action('admin_init', [$this, 'cugz_register_settings']);
-
-		add_action('admin_menu', [$this, 'cugz_register_options_page']);
 
 		add_action('wp_ajax_cugz_callback', [$this, 'cugz_callback']);
 
@@ -126,11 +135,13 @@ class GzipCache
 
 		add_action('wp_enqueue_scripts', [$this, 'cugz_dequeue_scripts'], 21);
 
-		add_action('activate_plugin', [$this, 'cugz_admin_notice'], 10, 2);
+		add_action('admin_notices', [$this, 'cugz_notice_preload']);
 
-		add_action('deactivate_plugin', [$this, 'cugz_admin_notice'], 10, 2);
+		if($this->zlib_enabled) {
 
-		add_action('admin_notices', [$this, 'cugz_notice']);
+			add_action('admin_menu', [$this, 'cugz_register_options_page']);
+
+		}
 
 		if (!defined('CUGZ_DISABLE_COMMENT') || !CUGZ_DISABLE_COMMENT) {
 
@@ -139,17 +150,23 @@ class GzipCache
         }
     }
 
-    public function cugz_admin_notice()
-    {
-    	set_transient('cugz_transient_wpgz_notice', true, 10);
-    }
-
-    public function cugz_notice()
+    public function cugz_notice_preload()
     {	
-    	if(get_transient('cugz_transient_wpgz_notice')) {
+    	if(get_transient('cugz_notice_preload')) {
 	  		?>
 		    <div class="notice notice-success is-dismissible">
 		        <p>You may need to preload your cache after activating or deactivating a new plugin or theme. Visit Cache Using Gzip plugin <a href="<?php echo esc_url($this->settings_url); ?>">settings</a>.</p>
+		    </div>
+		    <?php
+		}
+    }
+
+    public function cugz_notice_zlib()
+    {	
+    	if(get_transient('cugz_notice_zlib')) {
+	  		?>
+		    <div class="notice notice-error is-dismissible">
+		        <p>Zlib extension is not enabled. You must enable the zlib extension in order to use the <strong><?php echo esc_html($this->plugin_name); ?></strong> plugin.</p>
 		    </div>
 		    <?php
 		}
@@ -176,7 +193,11 @@ class GzipCache
 
     protected function cugz_add_filters()
     {
-    	add_filter('plugin_action_links_' . plugin_basename(CUGZ_PLUGIN_PATH), [$this, 'cugz_settings_link']);
+    	if($this->zlib_enabled) {
+
+    		add_filter('plugin_action_links_' . plugin_basename(CUGZ_PLUGIN_PATH), [$this, 'cugz_settings_link']);
+
+		}
 
     	add_filter('plugin_row_meta', [$this, 'cugz_plugin_row_meta'], 10, 2);
     }
@@ -203,6 +224,8 @@ class GzipCache
 
 	public function cugz_plugin_activation()
     {
+    	set_transient('cugz_notice_preload', true, 10);
+
     	foreach (self::$options as $option => $array)
 		{
 			$is_premium = $array['is_premium'] ?? false;
@@ -317,11 +340,7 @@ class GzipCache
 
 				$url = get_permalink($post);
 
-				if($url === "$this->site_url/") {
-					
-					$this->cugz_cache_home_page();
-				
-				} else if($dir = $this->cugz_create_folder_structure_from_url($url)) {
+				if($dir = $this->cugz_create_folder_structure_from_url($url)) {
 
 					$this->cugz_cache_page($url, $dir);
 
@@ -346,8 +365,6 @@ class GzipCache
 	public function cugz_refresh_archives($post)
 	{
 		global $GzipCachePermissions;
-
-		$this->cugz_cache_home_page();
 
 		$this->cugz_cache_blog_page();
 
@@ -470,7 +487,7 @@ class GzipCache
 	        }
 	    }
 
-	    return $current_directory === "$this->cache_dir/" ? false: $current_directory;
+	    return $current_directory;
 	}
 
 	protected function cugz_minify_css($css)
@@ -650,11 +667,6 @@ class GzipCache
 		}
 	}
 
-	protected function cugz_cache_home_page()
-	{
-		$this->cugz_cache_page($this->site_url);
-	}
-
 	protected function cugz_cache_blog_page()
 	{
 		if($blog_page_id = get_option('page_for_posts')) {
@@ -701,8 +713,6 @@ class GzipCache
 
 				update_option('cugz_status', 'processing');
 
-				$this->cugz_cache_home_page();
-
 			    foreach ($this->cugz_get_links() as $url)
 			    {
 			    	if($dir = $this->cugz_create_folder_structure_from_url($url)) {
@@ -720,11 +730,7 @@ class GzipCache
 
 				$url = get_permalink(sanitize_text_field(wp_unslash($_POST['post_id'])));
 
-				if($url === "$this->site_url/") {
-					
-					$this->cugz_cache_home_page();
-				
-				} else if($dir = $this->cugz_create_folder_structure_from_url($url)) {
+				if($dir = $this->cugz_create_folder_structure_from_url($url)) {
 						
 					$this->cugz_cache_page($url, $dir);
 

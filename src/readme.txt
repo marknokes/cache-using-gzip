@@ -4,7 +4,7 @@ Tags: gzip, cache, speed, performance, nginx
 Requires at least: 6.4.3
 Tested up to: 6.5.3
 Requires PHP: 7.2
-Stable tag: 2.6
+Stable tag: 2.7
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -54,6 +54,11 @@ download the required configuration from the plugin settings page.
 Automatic updates should work generally smoothly, but we still recommend you back up your site.
 
 == Changelog ==
+
+= 2.7 =
+
+* Add check for zlib extension.
+* Remove superflous class method
 
 = 2.6 =
 * Initial release.
