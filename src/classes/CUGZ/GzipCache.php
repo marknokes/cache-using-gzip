@@ -366,8 +366,6 @@ class GzipCache
 	{
 		global $GzipCachePermissions;
 
-		$this->cugz_cache_blog_page();
-
 		if (isset($GzipCachePermissions)) {
 
 			$GzipCachePermissions->cugz_cache_shop_page();
@@ -673,12 +671,17 @@ class GzipCache
 
 			$url = get_permalink($blog_page_id);
 
-			if($dir = $this->cugz_create_folder_structure_from_url($url)) {
-						
-				$this->cugz_cache_page($url, $dir);
+		} else {
 
-	    	}
+			$url = $this->site_url;
+
 		}
+
+		if($dir = $this->cugz_create_folder_structure_from_url($url)) {
+						
+			$this->cugz_cache_page($url, $dir);
+
+    	}
 	}
 
 	public function cugz_callback()
@@ -712,6 +715,8 @@ class GzipCache
 				$this->cugz_clean_dir();
 
 				update_option('cugz_status', 'processing');
+
+				$this->cugz_cache_blog_page();
 
 			    foreach ($this->cugz_get_links() as $url)
 			    {
