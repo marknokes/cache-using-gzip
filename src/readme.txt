@@ -2,8 +2,8 @@
 Contributors: marknokes
 Tags: gzip, cache, speed, performance, nginx
 Requires at least: 6.4.3
-Tested up to: 6.5.3
-Requires PHP: 7.2
+Tested up to: 6.5.4
+Requires PHP: 7.4
 Stable tag: 2.7.1
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
