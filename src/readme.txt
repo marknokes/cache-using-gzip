@@ -55,7 +55,7 @@ Automatic updates should work generally smoothly, but we still recommend you bac
 
 == Changelog ==
 
-= 2.7.1 =
+= 2.7.2 =
 
 * Test and confirm compatibility with WordPress 6.5.5 
 
