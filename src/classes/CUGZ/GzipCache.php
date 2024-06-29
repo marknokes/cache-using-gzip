@@ -280,6 +280,8 @@ class GzipCache
         foreach (self::$options as $option => $array)
         {
             delete_option($option);
+
+            wp_cache_delete($option, self::$options_group);
         }
     }
 
