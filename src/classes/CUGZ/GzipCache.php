@@ -72,7 +72,7 @@ class GzipCache
 
 		}
 
-		$plugin_post_types = get_option('cugz_plugin_post_types') ?: ['post_types' => ['']];
+		$plugin_post_types = self::cugz_get_option('cugz_plugin_post_types') ?: ['post_types' => ['']];
 
 		$plugin_data = get_file_data(CUGZ_PLUGIN_PATH, [
             'Version' => 'Version',
@@ -87,7 +87,7 @@ class GzipCache
 
 		$this->post_types_array = $plugin_post_types['post_types'];
 
-		$this->cugz_inline_js_css = get_option('cugz_inline_js_css');
+		$this->cugz_inline_js_css = self::cugz_get_option('cugz_inline_js_css');
 
 		$this->host = getenv('HTTP_HOST');
 
@@ -102,6 +102,29 @@ class GzipCache
 		$this->cugz_add_actions();
 
         $this->cugz_add_filters();
+	}
+
+	public static function cugz_get_option($option_name)
+	{
+	    $cached_value = wp_cache_get($option_name, self::$options_group);
+	    
+	    if ($cached_value === false) {
+
+	        $option_value = get_option($option_name);
+
+	        if ($option_value !== false) {
+
+	            wp_cache_set($option_name, $option_value, self::$options_group);
+
+	        }
+
+	        return $option_value;
+
+	    } else {
+
+	        return $cached_value;
+
+	    }
 	}
 
 	public static function get_instance()
@@ -121,6 +144,11 @@ class GzipCache
 
 	protected function cugz_add_actions()
     {
+    	foreach (self::$options as $option => $array)
+        {
+            add_action("update_option_$option", [$this, 'cugz_clear_option_cache'], 10, 3);
+        }
+
     	add_action('init', [$this, 'cugz_get_filesystem']);
 
     	add_action('admin_init', [$this, 'cugz_register_settings']);
@@ -149,6 +177,15 @@ class GzipCache
 
         }
     }
+
+	public function cugz_clear_option_cache($old_value, $new_value, $option_name)
+	{
+		if (array_key_exists($option_name, self::$options)) {
+			
+			wp_cache_delete($option_name, self::$options_group);
+
+		}
+	}
 
     public function cugz_notice_preload()
     {	
@@ -698,7 +735,7 @@ class GzipCache
 		{
 			case 'check_status':
 
-				echo esc_js(get_option('cugz_status'));
+				echo esc_js(self::cugz_get_option('cugz_status'));
 
 				break;
 

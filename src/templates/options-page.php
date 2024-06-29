@@ -1,4 +1,12 @@
-<?php if (!defined('ABSPATH')) exit; ?>
+<?php
+
+if (!defined('ABSPATH')) exit;
+
+use CUGZ\GzipCache;
+
+use CUGZ\GzipCachePermissions;
+
+?>
 
 <div class="flex-container">
 
@@ -18,7 +26,7 @@
 			
 					if('skip_settings_field' === $array['type']) continue;
 
-					$value = get_option($option);
+					$value = GzipCache::cugz_get_option($option);
 					?>
 					<tr>
 						<th>
@@ -56,9 +64,9 @@
 											]
 										];
 										if(!CUGZ_PERMISSIONS) {
-											echo wp_kses(\CUGZ\GzipCache::cugz_get_post_type_select_options($value), $options);
+											echo wp_kses(GzipCache::cugz_get_post_type_select_options($value), $options);
 										} else {
-											echo wp_kses(\CUGZ\GzipCachePermissions::cugz_get_post_type_select_options($value), $options);
+											echo wp_kses(GzipCachePermissions::cugz_get_post_type_select_options($value), $options);
 										}
 										?>
 									</select>
@@ -90,7 +98,7 @@
 					</td>
 				</tr>
 			</table>
-			<a class="button" href="<?php echo esc_url(\CUGZ\GzipCache::cugz_get_config_template_link()); ?>" target="_blank">Download config</a>
+			<a class="button" href="<?php echo esc_url(GzipCache::cugz_get_config_template_link()); ?>" target="_blank">Download config</a>
 			<a class="button" id="empty" href="#">Empty cache</a>
 			<a class="button" id="regen" href="#">Preload cache</a>
 			<?php submit_button(); ?>
