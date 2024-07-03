@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Cache Using Gzip
- * Version: 2.7.4
+ * Version: 2.7.5
  * Description: Creates gzipped files on your server to immensly improve page speed for site visitors
  * Author: Cache Using Gzip
  * Author URI: https://wpgzipcache.com
@@ -10,11 +10,14 @@
  * WC requires at least: 8.6.0
  * WC tested up to: 8.7.0
  * Requires at least: 6.4.3
- * Tested up to: 6.5.4
+ * Tested up to: 6.5.5
  * Requires PHP: 7.4
  */
 
 if (!defined('ABSPATH')) exit;
+
+use CUGZ\GzipCache;
+use CUGZ\GzipCachePermissions;
 
 spl_autoload_register(function ($class_name) {
 
@@ -30,8 +33,8 @@ spl_autoload_register(function ($class_name) {
 
 define('CUGZ_PLUGIN_PATH', __FILE__);
 
-define('CUGZ_PERMISSIONS', class_exists('\CUGZ\GzipCachePermissions'));
+define('CUGZ_PERMISSIONS', class_exists(GzipCachePermissions::class));
 
-$GzipCachePermissions = CUGZ_PERMISSIONS ? new \CUGZ\GzipCachePermissions(): NULL;
+$GzipCachePermissions = CUGZ_PERMISSIONS ? new GzipCachePermissions(): NULL;
 
-$GzipCache = \CUGZ\GzipCache::get_instance();
+$GzipCache = GzipCache::get_instance();

@@ -2,6 +2,8 @@
 
 namespace CUGZ;
 
+use Automattic\WooCommerce\Utilities\FeaturesUtil;
+
 class GzipCache
 {
 	public static $instance = NULL;
@@ -68,8 +70,6 @@ class GzipCache
 
 		    set_transient('cugz_notice_zlib', true, 10);
 
-		    add_action('admin_notices', [$this, 'cugz_notice_zlib']);
-
 		}
 
 		$plugin_post_types = self::cugz_get_option('cugz_plugin_post_types') ?: ['post_types' => ['']];
@@ -104,30 +104,11 @@ class GzipCache
         $this->cugz_add_filters();
 	}
 
-	public static function cugz_get_option($option_name)
-	{
-	    $cached_value = wp_cache_get($option_name, self::$options_group);
-	    
-	    if ($cached_value === false) {
+    public function __clone() {}
 
-	        $option_value = get_option($option_name);
+    public function __wakeup() {}
 
-	        if ($option_value !== false) {
-
-	            wp_cache_set($option_name, $option_value, self::$options_group);
-
-	        }
-
-	        return $option_value;
-
-	    } else {
-
-	        return $cached_value;
-
-	    }
-	}
-
-	public static function get_instance()
+    public static function get_instance()
 	{
         if (!isset(self::$instance)) {
 
@@ -137,10 +118,6 @@ class GzipCache
 
         return self::$instance;
     }
-
-    public function __clone() {}
-
-    public function __wakeup() {}
 
 	protected function cugz_add_actions()
     {
@@ -165,6 +142,8 @@ class GzipCache
 
 		add_action('admin_notices', [$this, 'cugz_notice_preload']);
 
+		add_action('admin_notices', [$this, 'cugz_notice_zlib']);
+
 		if($this->zlib_enabled) {
 
 			add_action('admin_menu', [$this, 'cugz_register_options_page']);
@@ -178,13 +157,54 @@ class GzipCache
         }
     }
 
-	public function cugz_clear_option_cache($old_value, $new_value, $option_name)
+    protected function cugz_add_filters()
+    {
+    	if($this->zlib_enabled) {
+
+    		add_filter('plugin_action_links_' . plugin_basename(CUGZ_PLUGIN_PATH), [$this, 'cugz_settings_link']);
+
+		}
+
+    	add_filter('plugin_row_meta', [$this, 'cugz_plugin_row_meta'], 10, 2);
+    }
+
+    public function cugz_clear_option_cache($old_value, $new_value, $option_name)
 	{
 		if (array_key_exists($option_name, self::$options)) {
 			
 			wp_cache_delete($option_name, self::$options_group);
 
 		}
+	}
+
+	private function update_option($option, $value)
+	{
+		update_option($option, $value);
+
+		$this->cugz_clear_option_cache('', $value, $option);
+	}
+
+	public static function cugz_get_option($option_name)
+	{
+	    $cached_value = wp_cache_get($option_name, self::$options_group);
+	    
+	    if ($cached_value === false) {
+
+	        $option_value = get_option($option_name);
+
+	        if ($option_value !== false) {
+
+	            wp_cache_set($option_name, $option_value, self::$options_group);
+
+	        }
+
+	        return $option_value;
+
+	    } else {
+
+	        return $cached_value;
+
+	    }
 	}
 
     public function cugz_notice_preload()
@@ -226,17 +246,6 @@ class GzipCache
 			request_filesystem_credentials($url, '', true, false, null);
 
 		}
-    }
-
-    protected function cugz_add_filters()
-    {
-    	if($this->zlib_enabled) {
-
-    		add_filter('plugin_action_links_' . plugin_basename(CUGZ_PLUGIN_PATH), [$this, 'cugz_settings_link']);
-
-		}
-
-    	add_filter('plugin_row_meta', [$this, 'cugz_plugin_row_meta'], 10, 2);
     }
 
     public function cugz_dequeue_scripts()
@@ -394,15 +403,17 @@ class GzipCache
 				break;
 		}
 
-		if('page' !== $post->post_type) {
-
-			$this->cugz_refresh_archives($post);
-
-		}
+		$this->cugz_refresh_archives($post);
 	}
 
 	public function cugz_refresh_archives($post)
 	{
+		if(!get_post_type_archive_link($post->post_type)) {
+
+			return;
+
+		}
+
 		global $GzipCachePermissions;
 
 		if (isset($GzipCachePermissions)) {
@@ -423,9 +434,9 @@ class GzipCache
 
 	public function cugz_wc_declare_compatibility()
 	{
-		if (class_exists(\Automattic\WooCommerce\Utilities\FeaturesUtil::class)) {
+		if (class_exists(FeaturesUtil::class)) {
 
-			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', CUGZ_PLUGIN_PATH);
+			FeaturesUtil::declare_compatibility('custom_order_tables', CUGZ_PLUGIN_PATH);
 			
 		}
 	}
@@ -706,15 +717,7 @@ class GzipCache
 
 	protected function cugz_cache_blog_page()
 	{
-		if($blog_page_id = get_option('page_for_posts')) {
-
-			$url = get_permalink($blog_page_id);
-
-		} else {
-
-			$url = $this->site_url;
-
-		}
+		$url = get_post_type_archive_link('post');
 
 		if($dir = $this->cugz_create_folder_structure_from_url($url)) {
 						
@@ -733,11 +736,13 @@ class GzipCache
 
 		$do = sanitize_text_field(wp_unslash($_POST['do'])) ?: '';
 
+		$cugz_status = "cugz_status";
+
 		switch ($do)
 		{
 			case 'check_status':
 
-				echo esc_js(self::cugz_get_option('cugz_status'));
+				echo esc_js(self::cugz_get_option($cugz_status));
 
 				break;
 
@@ -745,7 +750,7 @@ class GzipCache
 
 				$this->cugz_clean_dir();
 
-				update_option('cugz_status', 'empty');
+				$this->update_option($cugz_status, 'empty');
 
 				break;
 			
@@ -753,7 +758,7 @@ class GzipCache
 
 				$this->cugz_clean_dir();
 
-				update_option('cugz_status', 'processing');
+				$this->update_option($cugz_status, 'processing');
 
 				$this->cugz_cache_blog_page();
 
@@ -766,17 +771,23 @@ class GzipCache
 			    	}
 			    }
 
-			    update_option('cugz_status', 'preloaded');
+			    $this->update_option($cugz_status, 'preloaded');
 
 				break;
 
 			case 'single':
 
-				$url = get_permalink(sanitize_text_field(wp_unslash($_POST['post_id'])));
+				$post_id = absint($_POST['post_id']);
+
+				$post = get_post($post_id);
+
+				$url = get_permalink($post);
 
 				if($dir = $this->cugz_create_folder_structure_from_url($url)) {
 						
 					$this->cugz_cache_page($url, $dir);
+
+					$this->cugz_refresh_archives($post);
 
 		    	}
 
