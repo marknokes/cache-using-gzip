@@ -4,20 +4,27 @@ namespace CUGZ;
 
 use Automattic\WooCommerce\Utilities\FeaturesUtil;
 
+use CUGZ\GzipCacheEnterprise;
+
 class GzipCache
 {
 	public static $instance = NULL;
 
 	public static $options_group = "cugz_options_group";
 
-	public static $learn_more = "https://wpgzipcache.com/";
+	public static $learn_more = "https://wpgzipcache.com/compare-plans/";
 
 	public static $options = [
 		'cugz_plugin_post_types' => [
 			'name' => 'Cache these types:',
 			'type' => 'plugin_post_types',
 			'description' => 'Ctrl + click to select/deselect multiple post types.',
-			'default_value' => ''
+			'default_value' => [
+				'post_types' => [
+					'post',
+					'page'
+				]
+			]
 		],
 		'cugz_status' => [
 			'type' => 'skip_settings_field',
@@ -29,13 +36,6 @@ class GzipCache
             'description' => 'Removes links to local css/js and replaces with their contents. This may or may not break some theme layouts or functionality.',
             'default_value' => 0
         ],
-        'cugz_datepicker' => [
-        	'name' => 'Don\'t cache items before',
-        	'type' => 'datepicker',
-        	'is_premium' => true,
-        	'description' => 'If you have a large number of pages/posts/etc., specify a date before which items will not be cached.',
-        	'default_value' => '' 
-        ],
         'cugz_never_cache' => [
             'name' => 'Never cache:',
             'type' => 'text',
@@ -44,11 +44,18 @@ class GzipCache
             'default_value' => ''
         ],
         'cugz_include_archives' => [
-            'name' => 'Include archives on preload',
+            'name' => 'Cache archives on preload, update, publish',
             'type' => 'checkbox',
             'is_premium' => true,
             'description' => 'This could increase preload time significantly if you have many categories/tags',
             'default_value' => 0
+        ],
+        'cugz_datepicker' => [
+        	'name' => 'Don\'t cache items before',
+        	'type' => 'datepicker',
+        	'is_enterprise' => true,
+        	'description' => 'If you have a large number of pages/posts/etc., specify a date before which items will not be cached.',
+        	'default_value' => '' 
         ]
 	];
 
@@ -60,9 +67,10 @@ class GzipCache
 		   $plugin_version,
 		   $plugin_name,
 		   $settings_url,
-		   $zlib_enabled = true;
+		   $zlib_enabled = true,
+		   $GzipCachePluginExtras;
 
-	public function __construct()
+	public function __construct($do_wp = false)
 	{
 		if (!extension_loaded('zlib')) {
 
@@ -71,8 +79,6 @@ class GzipCache
 		    set_transient('cugz_notice_zlib', true, 10);
 
 		}
-
-		$plugin_post_types = self::cugz_get_option('cugz_plugin_post_types') ?: ['post_types' => ['']];
 
 		$plugin_data = get_file_data(CUGZ_PLUGIN_PATH, [
             'Version' => 'Version',
@@ -85,7 +91,7 @@ class GzipCache
 
 		$this->site_url = get_site_url();
 
-		$this->post_types_array = $plugin_post_types['post_types'];
+		$this->post_types_array = self::cugz_get_option('cugz_plugin_post_types')['post_types'] ?? self::$options['cugz_plugin_post_types']['default_value'];
 
 		$this->cugz_inline_js_css = self::cugz_get_option('cugz_inline_js_css');
 
@@ -95,34 +101,26 @@ class GzipCache
 
 		$this->settings_url = admin_url('options-general.php?page=cugz_gzip_cache');
 
-		register_activation_hook(CUGZ_PLUGIN_PATH, [$this, 'cugz_plugin_activation']);
+		if($do_wp) {
 
-        register_deactivation_hook(CUGZ_PLUGIN_PATH, [$this, 'cugz_plugin_deactivation']);
+			$this->GzipCachePluginExtras = CUGZ_PLUGIN_EXTRAS ? new GzipCachePluginExtras(): NULL;
 
-		$this->cugz_add_actions();
+			register_activation_hook(CUGZ_PLUGIN_PATH, [$this, 'cugz_plugin_activation']);
 
-        $this->cugz_add_filters();
+	        register_deactivation_hook(CUGZ_PLUGIN_PATH, [$this, 'cugz_plugin_deactivation']);
+
+			$this->cugz_add_actions();
+
+	        $this->cugz_add_filters();
+		}
 	}
-
-    public function __clone() {}
-
-    public function __wakeup() {}
-
-    public static function get_instance()
-	{
-        if (!isset(self::$instance)) {
-
-            self::$instance = new self();
-
-        }
-
-        return self::$instance;
-    }
 
 	protected function cugz_add_actions()
     {
     	foreach (self::$options as $option => $array)
         {
+        	if(self::cugz_skip_option($array)) continue;
+
             add_action("update_option_$option", [$this, 'cugz_clear_option_cache'], 10, 3);
         }
 
@@ -179,13 +177,15 @@ class GzipCache
 
 	private function update_option($option, $value)
 	{
-		update_option($option, $value);
-
 		$this->cugz_clear_option_cache('', $value, $option);
+		
+		update_option($option, $value);
 	}
 
 	public static function cugz_get_option($option_name)
 	{
+		if(self::cugz_skip_option(self::$options[$option_name])) return false;
+
 	    $cached_value = wp_cache_get($option_name, self::$options_group);
 	    
 	    if ($cached_value === false) {
@@ -268,15 +268,19 @@ class GzipCache
 	    }
 	}
 
+	protected static function cugz_skip_option($array)
+	{
+		return isset($array['is_premium']) && $array['is_premium'] && !CUGZ_PLUGIN_EXTRAS ||
+			   isset($array['is_enterprise']) && $array['is_enterprise'] && !CUGZ_ENTERPRISE;
+	}
+
 	public function cugz_plugin_activation()
     {
     	set_transient('cugz_notice_preload', true, 10);
 
     	foreach (self::$options as $option => $array)
 		{
-			$is_premium = $array['is_premium'] ?? false;
-
-			if($is_premium && !CUGZ_PERMISSIONS) continue;
+			if(self::cugz_skip_option($array)) continue;
 
 			add_option($option, $array['default_value']);
 		}
@@ -288,9 +292,9 @@ class GzipCache
 
         foreach (self::$options as $option => $array)
         {
-            delete_option($option);
-
             wp_cache_delete($option, self::$options_group);
+            
+            delete_option($option);
         }
     }
 
@@ -357,7 +361,12 @@ class GzipCache
 			'publish'
 		];
 
-		if($old_status === "trash" || !in_array($new_status, $status_array) || !in_array($post->post_type, $this->post_types_array)) {
+		if(
+			$old_status === "trash" ||
+			$post->post_type === "product" ||
+			!in_array($new_status, $status_array) ||
+			!in_array($post->post_type, $this->post_types_array)
+		) {
 
 			return;
 
@@ -383,8 +392,6 @@ class GzipCache
 				break;
 
 			case 'publish':
-
-				if('product' === $post->post_type) break;
 
 				$url = get_permalink($post);
 
@@ -414,14 +421,6 @@ class GzipCache
 
 		}
 
-		global $GzipCachePermissions;
-
-		if (isset($GzipCachePermissions)) {
-
-			$GzipCachePermissions->cugz_cache_shop_page();
-		
-		}
-
 	    foreach ($this->cugz_get_links($post) as $url)
 	    {
 	    	if($dir = $this->cugz_create_folder_structure_from_url($url)) {
@@ -443,8 +442,6 @@ class GzipCache
 
 	public function cugz_get_links($post = null)
 	{
-		global $GzipCachePermissions;
-
 		$is_preload = $post === null;
 
 	    $links = [];
@@ -459,17 +456,19 @@ class GzipCache
 
 	    } else {
 
-	    	foreach (wp_get_post_tags($post->ID) as $tag)
+	    	$post_id = method_exists($post, 'get_id') ? $post->get_id() : $post->ID;
+
+	    	foreach (wp_get_post_tags($post_id) as $tag)
 			{
 				$term_ids[] = $tag->term_id;
 			}
 
-			$cat_ids = wp_get_post_categories($post->ID);
+			$cat_ids = wp_get_post_categories($post_id);
 	    }
 
-	    if (isset($GzipCachePermissions)) {
+	    if (isset($this->GzipCachePluginExtras)) {
 
-			$links = $GzipCachePermissions->get_archive_links($links, $term_ids, $cat_ids);
+			$links = $this->GzipCachePluginExtras->get_archive_links($links, $term_ids, $cat_ids);
 
 		}
 
@@ -478,8 +477,6 @@ class GzipCache
 
 	protected function cugz_get_posts()
 	{
-		global $GzipCachePermissions;
-
 		$links = [];
 
 	    $args = [
@@ -488,9 +485,9 @@ class GzipCache
 			'numberposts' => -1
 		];
 
-		if (isset($GzipCachePermissions)) {
+		if (CUGZ_ENTERPRISE) {
 
-			$args = $GzipCachePermissions->get_additional_post_args($args);
+			$args = GzipCacheEnterprise::get_additional_post_args($args);
 
 		}
 
@@ -504,9 +501,7 @@ class GzipCache
 
 	public function cugz_create_folder_structure_from_url($url)
 	{
-		global $GzipCachePermissions;
-
-		if (isset($GzipCachePermissions) && $GzipCachePermissions->cugz_never_cache($url)) {
+		if (isset($this->GzipCachePluginExtras) && $this->GzipCachePluginExtras->cugz_never_cache($url)) {
 
 			return false;
 
@@ -819,7 +814,7 @@ class GzipCache
 			'bugs' => '<a href="' . esc_url("https://github.com/marknokes/cache-using-gzip/issues/new?assignees=marknokes&labels=bug&template=bug_report.md") . '" target="_blank">Submit a bug</a>'
 		];
 
-	    if (!CUGZ_PERMISSIONS) {
+	    if (!CUGZ_PLUGIN_EXTRAS) {
 
 	        return array_merge($links, $upgrade, $bugs);
 
@@ -839,9 +834,7 @@ class GzipCache
 	{
 		foreach (self::$options as $option => $array)
 		{
-			$is_premium = $array['is_premium'] ?? false;
-
-			if('skip_settings_field' === $array['type'] || ($is_premium && !CUGZ_PERMISSIONS)) continue;
+			if('skip_settings_field' === $array['type'] || self::cugz_skip_option($array)) continue;
 		
 			register_setting(self::$options_group, $option);
 		}

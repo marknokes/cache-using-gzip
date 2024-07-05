@@ -2,9 +2,7 @@
 
 if (!defined('ABSPATH')) exit;
 
-use CUGZ\GzipCache;
-
-use CUGZ\GzipCachePermissions;
+use CUGZ\GzipCachePluginExtras;
 
 ?>
 
@@ -20,13 +18,32 @@ use CUGZ\GzipCachePermissions;
 				<?php
 				foreach (self::$options as $option => $array)
 				{
-					$is_premium = $array['is_premium'] ?? false;
+					if(isset($array['is_premium'])) {
 
-					$disabled = $is_premium && !CUGZ_PERMISSIONS ? 'disabled': '';
+						$is_premium = $array['is_premium'];
+
+						$feature = "Premium";
+
+						$disabled = $is_premium && !CUGZ_PLUGIN_EXTRAS ? 'disabled': '';
+
+					} else if(isset($array['is_enterprise'])) {
+
+						$is_enterprise = $array['is_enterprise'];
+
+						$feature = "Enterprise";
+
+						$disabled = $is_enterprise && !CUGZ_ENTERPRISE ? 'disabled': '';
+
+					} else {
+
+						$is_premium = $is_enterprise = false;
+
+						$feature = $disabled = "";
+					}
 			
 					if('skip_settings_field' === $array['type']) continue;
 
-					$value = GzipCache::cugz_get_option($option);
+					$value = self::cugz_get_option($option);
 					?>
 					<tr>
 						<th>
@@ -34,28 +51,30 @@ use CUGZ\GzipCachePermissions;
 						</th>
 						<td>
 							<?php
+
+							$name = !$disabled ? $option: "";
 							
 							switch ($array['type'])
 							{
 								case 'datepicker':
 									?>
-									<input type="text" id="datepicker" name="<?php echo esc_attr($option); ?>" value="<?php echo esc_attr($value); ?>" <?php echo esc_attr($disabled); ?> />
+									<input type="text" id="datepicker" name="<?php echo esc_attr($name); ?>" value="<?php echo esc_attr($value); ?>" <?php echo esc_attr($disabled); ?> />
 									<?php
 									break;
 								case 'checkbox':
 									$checked = checked(1, $value, false);
 									?>
-									<input type='checkbox' name='<?php echo esc_attr($option); ?>' value='1' <?php echo esc_attr($checked); ?> <?php echo esc_attr($disabled); ?> />
+									<input type='checkbox' name='<?php echo esc_attr($name); ?>' value='1' <?php echo esc_attr($checked); ?> <?php echo esc_attr($disabled); ?> />
 									<?php
 									break;
 								case 'textarea':
 									?>
-									<textarea rows="10" cols="100" id="<?php echo esc_attr($option); ?>" name="<?php echo esc_attr($option); ?>" <?php echo esc_attr($disabled); ?>><?php echo esc_textarea($value); ?></textarea>
+									<textarea rows="10" cols="100" name="<?php echo esc_attr($name); ?>" id="<?php echo esc_attr($option); ?>" <?php echo esc_attr($disabled); ?>><?php echo esc_textarea($value); ?></textarea>
 									<?php
 									break;
 								case 'plugin_post_types':
 									?>
-									<select name='<?php echo esc_attr($option); ?>[post_types][]' multiple='multiple'>
+									<select name='<?php echo esc_attr($name); ?>[post_types][]' multiple='multiple'>
 										<?php
 										$options = [
 											'option' => [
@@ -63,10 +82,10 @@ use CUGZ\GzipCachePermissions;
 												'selected' => []
 											]
 										];
-										if(!CUGZ_PERMISSIONS) {
-											echo wp_kses(GzipCache::cugz_get_post_type_select_options($value), $options);
+										if(!CUGZ_PLUGIN_EXTRAS) {
+											echo wp_kses(self::cugz_get_post_type_select_options($value), $options);
 										} else {
-											echo wp_kses(GzipCachePermissions::cugz_get_post_type_select_options($value), $options);
+											echo wp_kses(GzipCachePluginExtras::cugz_get_post_type_select_options($value), $options);
 										}
 										?>
 									</select>
@@ -74,11 +93,11 @@ use CUGZ\GzipCachePermissions;
 									break;
 								default:
 									?>
-									<input size="30" type="text" id="<?php echo esc_attr($option); ?>" name="<?php echo esc_attr($option); ?>" value="<?php echo esc_attr($value); ?>" <?php echo esc_attr($disabled); ?> />
+									<input size="30" type="text" name="<?php echo esc_attr($name); ?>" id="<?php echo esc_attr($option); ?>" value="<?php echo esc_attr($value); ?>" <?php echo esc_attr($disabled); ?> />
 									<?php
 									break;
 							} ?>
-							<p class="description"><span class="pro-name"><?php echo $is_premium && !CUGZ_PERMISSIONS ? "Pro feature: ": ""; ?></span><?php echo esc_html($array['description']); ?></p>
+							<p class="description"><span class="pro-name"><?php echo $disabled ? esc_html($feature) . " feature: ": ""; ?></span><?php echo esc_html($array['description']); ?></p>
 						</td>
 					</tr>
 				<?php } ?>
@@ -98,24 +117,26 @@ use CUGZ\GzipCachePermissions;
 					</td>
 				</tr>
 			</table>
-			<a class="button" href="<?php echo esc_url(GzipCache::cugz_get_config_template_link()); ?>" target="_blank">Download config</a>
+			<a class="button" href="<?php echo esc_url(self::cugz_get_config_template_link()); ?>" target="_blank">Download config</a>
 			<a class="button" id="empty" href="#">Empty cache</a>
 			<a class="button" id="regen" href="#">Preload cache</a>
 			<?php submit_button(); ?>
 		</form>
 	</div>
-	<?php if(!CUGZ_PERMISSIONS) { ?>
+	<?php if(!CUGZ_PLUGIN_EXTRAS) { ?>
 	<div class="cugz-wrap">
 		<div class="go-pro">
-			<h2>Upgrading to <span class="pro-name">Cache Using Gzip Pro</span> gives you these added features:</h2>
+			<h2>Upgrading to <span class="pro-name">Cache Using Gzip Premium</span> gives you these features:</h2>
 			<ul>
 				<li>Support for custom post types</li>
 				<li>A cache link on posts and pages let you cache individual items on the fly</li>
 				<li>Cache WooCommerce products and product category/tag archives</li>
 				<li>Exclude a list of page slugs from ever being cached</li>
-				<li>Specify a date before which items will not be cached</li>
+				<li>Use the bulk edit menu for pages, posts, etc. to cache a selection</li>
+				<li><span class="pro-name">Enterprise feature</span>: Specify a date before which items will not be cached</li>
+				<li><span class="pro-name">Enterprise feature</span>: Enterprise priority support</li>
 			</ul>
-			<a class="button button-primary" target="_blank" rel="noopener" href="<?php echo esc_url(self::$learn_more); ?>">Learn more</a>
+			<a class="button button-primary" target="_blank" rel="noopener" href="<?php echo esc_url(self::$learn_more); ?>">Compare Plans</a>
 		</div>
 	<div>
 	<?php } ?>
