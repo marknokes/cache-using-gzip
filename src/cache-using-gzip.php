@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Cache Using Gzip
- * Version: 2.7.6
+ * Version: 2.7.7
  * Description: Creates gzipped files on your server to immensly improve page speed for site visitors
  * Author: Cache Using Gzip
  * Author URI: https://wpgzipcache.com
@@ -10,7 +10,7 @@
  * WC requires at least: 8.6.0
  * WC tested up to: 8.7.0
  * Requires at least: 6.4.3
- * Tested up to: 6.5.5
+ * Tested up to: 6.6
  * Requires PHP: 7.4
  */
 

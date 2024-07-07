@@ -2,9 +2,9 @@
 Contributors: marknokes
 Tags: gzip, cache, speed, performance, nginx
 Requires at least: 6.4.3
-Tested up to: 6.5.5
+Tested up to: 6.6
 Requires PHP: 7.4
-Stable tag: 2.7.6
+Stable tag: 2.7.7
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -54,6 +54,10 @@ download the required configuration from the plugin settings page.
 Automatic updates should work generally smoothly, but we still recommend you back up your site.
 
 == Changelog ==
+
+= 2.7.7 =
+
+* Disable autoloading of options. Test and confirm compatibility with 6.6-RC2.
 
 = 2.7.6 =
 

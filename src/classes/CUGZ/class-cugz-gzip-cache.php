@@ -179,7 +179,7 @@ class GzipCache
 	{
 		$this->cugz_clear_option_cache('', $value, $option);
 		
-		update_option($option, $value);
+		update_option($option, $value, false);
 	}
 
 	public static function cugz_get_option($option_name)
@@ -282,7 +282,7 @@ class GzipCache
 		{
 			if(self::cugz_skip_option($array)) continue;
 
-			add_option($option, $array['default_value']);
+			add_option($option, $array['default_value'], '', false);
 		}
     }
 
