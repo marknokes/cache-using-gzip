@@ -170,7 +170,7 @@ class GzipCache
 	{
 		if (array_key_exists($option_name, self::$options)) {
 			
-			wp_cache_delete($option_name, self::$options_group);
+			wp_cache_delete($option_name);
 
 		}
 	}
@@ -186,7 +186,7 @@ class GzipCache
 	{
 		if(self::cugz_skip_option(self::$options[$option_name])) return false;
 
-	    $cached_value = wp_cache_get($option_name, self::$options_group);
+	    $cached_value = wp_cache_get($option_name);
 	    
 	    if ($cached_value === false) {
 
@@ -194,7 +194,7 @@ class GzipCache
 
 	        if ($option_value !== false) {
 
-	            wp_cache_set($option_name, $option_value, self::$options_group);
+	            wp_cache_set($option_name, $option_value);
 
 	        }
 
@@ -292,7 +292,7 @@ class GzipCache
 
         foreach (self::$options as $option => $array)
         {
-            wp_cache_delete($option, self::$options_group);
+            wp_cache_delete($option);
             
             delete_option($option);
         }
