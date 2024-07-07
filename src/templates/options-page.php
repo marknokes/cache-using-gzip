@@ -74,7 +74,7 @@ use CUGZ\GzipCachePluginExtras;
 									break;
 								case 'plugin_post_types':
 									?>
-									<select name='<?php echo esc_attr($name); ?>[post_types][]' multiple='multiple'>
+									<select name='<?php echo esc_attr($name); ?>[]' multiple='multiple'>
 										<?php
 										$options = [
 											'option' => [

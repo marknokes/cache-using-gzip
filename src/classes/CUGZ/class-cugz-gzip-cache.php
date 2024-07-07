@@ -19,12 +19,7 @@ class GzipCache
 			'name' => 'Cache these types:',
 			'type' => 'plugin_post_types',
 			'description' => 'Ctrl + click to select/deselect multiple post types.',
-			'default_value' => [
-				'post_types' => [
-					'post',
-					'page'
-				]
-			]
+			'default_value' => ['post', 'page']
 		],
 		'cugz_status' => [
 			'type' => 'skip_settings_field',
@@ -59,8 +54,9 @@ class GzipCache
         ]
 	];
 
-	public $post_types_array,
+	public $cugz_plugin_post_types,
 		   $cugz_inline_js_css,
+		   $cugz_status,
 		   $host,
 		   $cache_dir,
 		   $site_url,
@@ -72,6 +68,15 @@ class GzipCache
 
 	public function __construct($do_wp = false)
 	{
+		foreach (self::$options as $option => $array)
+        {
+        	if(self::cugz_skip_option($array)) continue;
+
+        	$this->$option = self::cugz_get_option($option);
+
+            add_action("update_option_$option", [$this, 'cugz_clear_option_cache'], 10, 3);
+        }
+
 		if (!extension_loaded('zlib')) {
 
 			$this->zlib_enabled = false;
@@ -90,10 +95,6 @@ class GzipCache
         $this->plugin_name = $plugin_data['Name'];
 
 		$this->site_url = get_site_url();
-
-		$this->post_types_array = self::cugz_get_option('cugz_plugin_post_types')['post_types'] ?? self::$options['cugz_plugin_post_types']['default_value'];
-
-		$this->cugz_inline_js_css = self::cugz_get_option('cugz_inline_js_css');
 
 		$this->host = getenv('HTTP_HOST');
 
@@ -117,13 +118,6 @@ class GzipCache
 
 	protected function cugz_add_actions()
     {
-    	foreach (self::$options as $option => $array)
-        {
-        	if(self::cugz_skip_option($array)) continue;
-
-            add_action("update_option_$option", [$this, 'cugz_clear_option_cache'], 10, 3);
-        }
-
     	add_action('init', [$this, 'cugz_get_filesystem']);
 
     	add_action('admin_init', [$this, 'cugz_register_settings']);
@@ -166,18 +160,18 @@ class GzipCache
     	add_filter('plugin_row_meta', [$this, 'cugz_plugin_row_meta'], 10, 2);
     }
 
-    public function cugz_clear_option_cache($old_value, $new_value, $option_name)
+    public static function cugz_clear_option_cache($old_value, $new_value, $option_name)
 	{
 		if (array_key_exists($option_name, self::$options)) {
 			
-			wp_cache_delete($option_name);
+			wp_cache_delete($option_name, 'options');
 
 		}
 	}
 
-	private function update_option($option, $value)
+	private static function update_option($option, $value)
 	{
-		$this->cugz_clear_option_cache('', $value, $option);
+		self::cugz_clear_option_cache('', $value, $option);
 		
 		update_option($option, $value, false);
 	}
@@ -186,7 +180,7 @@ class GzipCache
 	{
 		if(self::cugz_skip_option(self::$options[$option_name])) return false;
 
-	    $cached_value = wp_cache_get($option_name);
+	    $cached_value = wp_cache_get($option_name, 'options');
 	    
 	    if ($cached_value === false) {
 
@@ -194,7 +188,7 @@ class GzipCache
 
 	        if ($option_value !== false) {
 
-	            wp_cache_set($option_name, $option_value);
+	            wp_cache_set($option_name, $option_value, 'options');
 
 	        }
 
@@ -282,7 +276,7 @@ class GzipCache
 		{
 			if(self::cugz_skip_option($array)) continue;
 
-			add_option($option, $array['default_value'], '', false);
+			update_option($option, $array['default_value'], '', false);
 		}
     }
 
@@ -292,7 +286,7 @@ class GzipCache
 
         foreach (self::$options as $option => $array)
         {
-            wp_cache_delete($option);
+            wp_cache_delete($option, 'options');
             
             delete_option($option);
         }
@@ -337,15 +331,15 @@ class GzipCache
     {
         $options = "";
 
-        $value = $value ?: ['post_types' => ['']];
+        $value = $value ?: [];
 
         $post_types = ['post', 'page'];
 
         foreach($post_types as $post_type)
         {   
-            $key = array_search($post_type, $value['post_types']);
+            $key = array_search($post_type, $value);
 
-            $selected = selected($post_type, $value['post_types'][$key], false);
+            $selected = selected($post_type, $value[$key], false);
 
             $options .= "<option value='$post_type' $selected>$post_type</option>";
         }
@@ -365,7 +359,7 @@ class GzipCache
 			$old_status === "trash" ||
 			$post->post_type === "product" ||
 			!in_array($new_status, $status_array) ||
-			!in_array($post->post_type, $this->post_types_array)
+			!in_array($post->post_type, $this->cugz_plugin_post_types)
 		) {
 
 			return;
@@ -480,7 +474,7 @@ class GzipCache
 		$links = [];
 
 	    $args = [
-			'post_type'   => $this->post_types_array,
+			'post_type'   => $this->cugz_plugin_post_types,
 			'post_status' => 'publish',
 			'numberposts' => -1
 		];
@@ -731,13 +725,11 @@ class GzipCache
 
 		$do = sanitize_text_field(wp_unslash($_POST['do'])) ?: '';
 
-		$cugz_status = "cugz_status";
-
 		switch ($do)
 		{
 			case 'check_status':
 
-				echo esc_js(self::cugz_get_option($cugz_status));
+				echo esc_js($this->cugz_status);
 
 				break;
 
@@ -745,7 +737,7 @@ class GzipCache
 
 				$this->cugz_clean_dir();
 
-				$this->update_option($cugz_status, 'empty');
+				self::update_option('cugz_status', 'empty');
 
 				break;
 			
@@ -753,7 +745,7 @@ class GzipCache
 
 				$this->cugz_clean_dir();
 
-				$this->update_option($cugz_status, 'processing');
+				self::update_option('cugz_status', 'processing');
 
 				$this->cugz_cache_blog_page();
 
@@ -766,7 +758,7 @@ class GzipCache
 			    	}
 			    }
 
-			    $this->update_option($cugz_status, 'preloaded');
+			    self::update_option('cugz_status', 'preloaded');
 
 				break;
 
