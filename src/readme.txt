@@ -4,7 +4,7 @@ Tags: gzip, cache, speed, performance, nginx
 Requires at least: 6.4.3
 Tested up to: 6.6
 Requires PHP: 7.4
-Stable tag: 2.7.8
+Stable tag: 2.7.9
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 

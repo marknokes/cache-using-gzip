@@ -69,7 +69,7 @@ class GzipCache
 		   $cugz_datepicker,
 		   $GzipCachePluginExtras;
 
-	public function __construct($do_wp = false)
+	public function __construct()
 	{
 		foreach (self::$options as $option => $array)
         {
@@ -79,14 +79,6 @@ class GzipCache
 
             add_action("update_option_$option", [$this, 'cugz_clear_option_cache'], 10, 3);
         }
-
-		if (!extension_loaded('zlib')) {
-
-			$this->zlib_enabled = false;
-
-		    set_transient('cugz_notice_zlib', true, 10);
-
-		}
 
 		$plugin_data = get_file_data(CUGZ_PLUGIN_PATH, [
             'Version' => 'Version',
@@ -104,22 +96,9 @@ class GzipCache
 		$this->cache_dir = strtok(WP_CONTENT_DIR . "/cugz_gzip_cache/" . $this->host, ':');
 
 		$this->settings_url = admin_url('options-general.php?page=cugz_gzip_cache');
-
-		if($do_wp) {
-
-			$this->GzipCachePluginExtras = CUGZ_PLUGIN_EXTRAS ? new GzipCachePluginExtras(): NULL;
-
-			register_activation_hook(CUGZ_PLUGIN_PATH, [$this, 'cugz_plugin_activation']);
-
-	        register_deactivation_hook(CUGZ_PLUGIN_PATH, [$this, 'cugz_plugin_deactivation']);
-
-			$this->cugz_add_actions();
-
-	        $this->cugz_add_filters();
-		}
 	}
 
-	protected function cugz_add_actions()
+	public function cugz_add_actions()
     {
     	add_action('init', [$this, 'cugz_get_filesystem']);
 
@@ -135,10 +114,6 @@ class GzipCache
 
 		add_action('wp_enqueue_scripts', [$this, 'cugz_dequeue_scripts'], 21);
 
-		add_action('admin_notices', [$this, 'cugz_notice_preload']);
-
-		add_action('admin_notices', [$this, 'cugz_notice_zlib']);
-
 		if($this->zlib_enabled) {
 
 			add_action('admin_menu', [$this, 'cugz_register_options_page']);
@@ -150,9 +125,21 @@ class GzipCache
             add_action('wp_head', [$this, 'cugz_print_comment'], 1);
 
         }
+
+        if($cugz_notice = get_transient('cugz_notice')) {
+
+            add_action('admin_notices', function() use ($cugz_notice) {
+
+                $this->cugz_notice($cugz_notice['message'], $cugz_notice['type']);
+
+                delete_transient('cugz_notice');
+
+            });
+
+        }
     }
 
-    protected function cugz_add_filters()
+    public function cugz_add_filters()
     {
     	if($this->zlib_enabled) {
 
@@ -204,27 +191,14 @@ class GzipCache
 	    }
 	}
 
-    public function cugz_notice_preload()
-    {	
-    	if(get_transient('cugz_notice_preload')) {
-	  		?>
-		    <div class="notice notice-success is-dismissible">
-		        <p>You may need to preload your cache after activating or deactivating a new plugin or theme. Visit Cache Using Gzip plugin <a href="<?php echo esc_url($this->settings_url); ?>">settings</a>.</p>
-		    </div>
-		    <?php
-		}
-    }
-
-    public function cugz_notice_zlib()
-    {	
-    	if(get_transient('cugz_notice_zlib')) {
-	  		?>
-		    <div class="notice notice-error is-dismissible">
-		        <p>Zlib extension is not enabled. You must enable the zlib extension in order to use the <strong><?php echo esc_html($this->plugin_name); ?></strong> plugin.</p>
-		    </div>
-		    <?php
-		}
-    }
+	public function cugz_notice($message, $type)
+	{
+		?>
+	    <div class="notice notice-<?php echo esc_attr($type); ?> is-dismissible">
+	        <p><?php echo $message; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></p>
+	    </div>
+	    <?php
+	}
 
     public function cugz_get_filesystem()
     {
@@ -273,7 +247,10 @@ class GzipCache
 
 	public function cugz_plugin_activation()
     {
-    	set_transient('cugz_notice_preload', true, 10);
+    	set_transient('cugz_notice', [
+            'message' => "You may need to preload your cache after activating or deactivating a new plugin or theme. Visit Cache Using Gzip plugin <a href='" . esc_url($this->settings_url) . "'>settings</a>.",
+            'type'    => "success"
+        ], 3600);
 
     	foreach (self::$options as $option => $array)
 		{
@@ -608,6 +585,7 @@ class GzipCache
 
 	    	} else {
 	    		
+	    		// phpcs:ignore WordPress.WP.EnqueuedResources.NonEnqueuedScript
 	    		return '<script src="'.$matches[1].'">';
 		        
 	    	}
