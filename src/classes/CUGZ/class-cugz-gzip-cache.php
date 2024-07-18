@@ -64,6 +64,9 @@ class GzipCache
 		   $plugin_name,
 		   $settings_url,
 		   $zlib_enabled = true,
+		   $cugz_never_cache,
+		   $cugz_include_archives,
+		   $cugz_datepicker,
 		   $GzipCachePluginExtras;
 
 	public function __construct($do_wp = false)
