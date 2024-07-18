@@ -55,6 +55,12 @@ Automatic updates should work generally smoothly, but we still recommend you bac
 
 == Changelog ==
 
+= 2.7.9 =
+
+* Bugfix: dynamic var deprecated notice
+* UI improvement for options page
+* Refactor admin notice behavior and code readability
+
 = 2.7.8 =
 
 * Bugfix: add_option in combination with wp_cache_set not serializing data properly in redis object cache. Use update_option on plugin activation instead
