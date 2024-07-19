@@ -12,6 +12,8 @@ class GzipCache
 
 	public static $learn_more = "https://wpgzipcache.com/compare-plans/";
 
+	public static $options_page_url = "tools.php?page=cugz_gzip_cache";
+
 	public static $options = [
 		'cugz_plugin_post_types' => [
 			'name' => 'Cache these types:',
@@ -93,7 +95,7 @@ class GzipCache
 
 		$this->cache_dir = strtok(WP_CONTENT_DIR . "/cugz_gzip_cache/" . $this->host, ':');
 
-		$this->settings_url = admin_url('options-general.php?page=cugz_gzip_cache');
+		$this->settings_url = admin_url(self::$options_page_url);
 	}
 
 	public function cugz_add_actions()
@@ -111,6 +113,8 @@ class GzipCache
 		add_action('admin_enqueue_scripts', [$this, 'cugz_enqueue_admin_scripts']);
 
 		add_action('wp_enqueue_scripts', [$this, 'cugz_dequeue_scripts'], 21);
+
+		add_action('cugz_post_options_page', [$this, 'cugz_post_options_page']);
 
 		if($this->zlib_enabled) {
 
@@ -206,7 +210,7 @@ class GzipCache
 			
 		}
 
-		$url = wp_nonce_url('options-general.php?page=cugz_gzip_cache', 'cache-using-gzip');
+		$url = wp_nonce_url(self::$options_page_url, 'cache-using-gzip');
 
 		$creds = request_filesystem_credentials($url, '', false, false, null);
 
@@ -277,7 +281,7 @@ class GzipCache
 
 	public function cugz_enqueue_admin_scripts($hook)
 	{
-		if ('edit.php' !== $hook && 'settings_page_cugz_gzip_cache' !== $hook) {
+		if ('edit.php' !== $hook && 'tools_page_cugz_gzip_cache' !== $hook) {
 
 			return;
 
@@ -285,14 +289,15 @@ class GzipCache
 
 		$local_args = [
 			'nonce' => wp_create_nonce('ajax-nonce'),
-			'is_settings_page' => false
+			'is_settings_page' => false,
+			'options_page_url' => self::$options_page_url
 		];
 
 		wp_enqueue_script('cugz_js', plugin_dir_url(CUGZ_PLUGIN_PATH) . 'js/main.min.js', ['jquery'], $this->plugin_version, true);
 
 		wp_enqueue_style('cugz_css', plugin_dir_url(CUGZ_PLUGIN_PATH) . 'css/style.min.css', [], $this->plugin_version);
 
-		if('settings_page_cugz_gzip_cache' === $hook) {
+		if('tools_page_cugz_gzip_cache' === $hook) {
 
 			wp_enqueue_script('jquery-ui-datepicker');
 
@@ -302,8 +307,13 @@ class GzipCache
     		
 		}
 
-		wp_localize_script('cugz_js', 'ajax_var', $local_args);
+		wp_localize_script('cugz_js', 'cugz_ajax_var', $local_args);
 	}
+
+	public function cugz_post_options_page()
+    {
+        echo '<a class="button button-float-right" href="' . esc_url(self::cugz_get_config_template_link()) . '" target="_blank">Download config</a>';
+    }
 
 	public static function cugz_get_post_type_select_options($value)
     {
@@ -457,11 +467,7 @@ class GzipCache
 			'numberposts' => -1
 		];
 
-		if (CUGZ_ENTERPRISE) {
-
-			$args = GzipCacheEnterprise::get_additional_post_args($args);
-
-		}
+		$args = CUGZ_ENTERPRISE ? GzipCacheEnterprise::get_additional_post_args($args): $args;
 
 	    foreach (get_posts($args) as $item)
 	    {
@@ -782,16 +788,10 @@ class GzipCache
 		];
 
 		$bugs = [
-			'bugs' => '<a href="' . esc_url("https://github.com/marknokes/cache-using-gzip/issues/new?assignees=marknokes&labels=bug&template=bug_report.md") . '" target="_blank">Submit a bug</a>'
+			'bugs' => '<a href="https://github.com/marknokes/cache-using-gzip/issues/new?assignees=marknokes&labels=bug&template=bug_report.md" target="_blank">Submit a bug</a>'
 		];
 
-	    if (!CUGZ_PLUGIN_EXTRAS) {
-
-	        return array_merge($links, $upgrade, $bugs);
-
-	    }
-
-	    return array_merge($links, $bugs);
+	    return !CUGZ_PLUGIN_EXTRAS ? array_merge($links, $upgrade, $bugs): array_merge($links, $bugs);
 	}
 
 	public function cugz_settings_link($links)
@@ -813,7 +813,7 @@ class GzipCache
 
 	public function cugz_register_options_page()
 	{
-		add_options_page('Settings', 'Cache Using Gzip', 'manage_options', 'cugz_gzip_cache', [$this,'cugz_options_page'] );
+		add_management_page('Settings', 'Cache Using Gzip', 'manage_options', 'cugz_gzip_cache', [$this,'cugz_options_page'] );
 	}
 
 	public function cugz_options_page()
@@ -867,7 +867,7 @@ class GzipCache
     {
 		printf("\n\t<!-- %s -->\n", esc_html(sprintf(
 			'Performance optimized by Cache Using Gzip. Learn more: %s',
-			'https://wpgzipcache.com'
+			esc_url(self::$learn_more)
 		)));
 
 		return;

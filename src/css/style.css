@@ -41,6 +41,10 @@ th label {
   font-size: 1.25em;
   margin-left: 20px;
 }
+.button-float-right {
+  float:right;
+  margin-left: 4px !important;
+}
 @media (max-width: 800px) {
   .flex-container {
     flex-direction: column;

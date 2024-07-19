@@ -5,7 +5,7 @@ jQuery(document).ready(function($) {
 		$complete = $("p#complete"),
 		$clean = $("p#clean");
 
-	if(ajax_var.is_settings_page) {
+	if(cugz_ajax_var.is_settings_page) {
 
 		$('#datepicker').datepicker({
 	        dateFormat: 'yy-mm-dd',
@@ -48,7 +48,7 @@ jQuery(document).ready(function($) {
 			'url': "/wp-admin/admin-ajax.php",
 			'data': {
 				'action': 'cugz_callback',
-				'nonce': ajax_var.nonce,
+				'nonce': cugz_ajax_var.nonce,
 				'do': 'check_status'
 			},
 			success: function(r) {
@@ -93,7 +93,7 @@ jQuery(document).ready(function($) {
 				'url': "/wp-admin/admin-ajax.php",
 				'data': {
 					'action': 'cugz_callback',
-					'nonce': ajax_var.nonce,
+					'nonce': cugz_ajax_var.nonce,
 					'do': action
 				},
 				success: function(r) {
@@ -105,7 +105,7 @@ jQuery(document).ready(function($) {
 				},
 				error: function() {
 
-					location.href = "/wp-admin/options-general.php?page=cugz_gzip_cache";
+					location.href = "/wp-admin/" + cugz_ajax_var.options_page_url;
 
 				}
 			});
@@ -134,7 +134,7 @@ jQuery(document).ready(function($) {
 			'url': "/wp-admin/admin-ajax.php",
 			'data': {
 				'action': 'cugz_callback',
-				'nonce': ajax_var.nonce,
+				'nonce': cugz_ajax_var.nonce,
 				'do': 'single',
 				'post_id': $(this).data("post-id")
 			},

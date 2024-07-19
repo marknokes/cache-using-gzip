@@ -120,7 +120,6 @@ use CUGZ\GzipCacheEnterprise;
 						</td>
 					</tr>
 				</table>
-				<a class="button" href="<?php echo esc_url(self::cugz_get_config_template_link()); ?>" target="_blank">Download config</a>
 				<a class="button" id="empty" href="#">Empty cache</a>
 				<a class="button" id="regen" href="#">Preload cache</a>
 				<?php do_action('cugz_post_options_page'); ?>

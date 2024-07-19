@@ -4,7 +4,7 @@ Tags: gzip, cache, speed, performance, nginx
 Requires at least: 6.4.3
 Tested up to: 6.6
 Requires PHP: 7.4
-Stable tag: 2.7.9
+Stable tag: 2.8
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -25,7 +25,7 @@ Please report confirmed bugs on the Cache Using Gzip [github](https://github.com
 = On what web servers can this plugin be installed =
 
 The Cache Using Gzip plugin works on Apache and Nginx servers. After the plugin is intalled and activated, you may
-download the required configuration from the plugin settings page.
+download the required configuration from the plugin settings page (Tools => Cache Using Gzip).
 
 == Installation ==
 
@@ -33,6 +33,7 @@ download the required configuration from the plugin settings page.
 
 * WordPress Version 6.4.3 or newer (installed)
 * PHP Version 7.2 or newer
+* The Cache Using Gzip plugin requires a "pretty" URL. Confirm your permalink structure is something other than "Plain" (Settings => Permalinks).
 
 = Installation instructions =
 
@@ -41,8 +42,8 @@ download the required configuration from the plugin settings page.
 3. Search for the **Cache Using Gzip** plugin.
 4. Click on **Install Now** and wait until the plugin is installed successfully.
 5. Activate the plugin by clicking **Activate** now on the success page.
-6. Visit the plugin settings page to download the reqired apache/nginx config rules.
-7. Add the rules to your .htaccess or nginx.conf 
+6. Visit the plugin settings page (Tools => Cache Using Gzip) to download the reqired apache/nginx config rules.
+7. Add the rules to your .htaccess or nginx.conf.
 
 == Screenshots ==
 
@@ -54,6 +55,11 @@ download the required configuration from the plugin settings page.
 Automatic updates should work generally smoothly, but we still recommend you back up your site.
 
 == Changelog ==
+
+= 2.8 =
+
+* Move plugin settings page to Tools menu
+* Rename localized js var to mitigate possible naming collision
 
 = 2.7.9 =
 
