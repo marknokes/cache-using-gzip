@@ -8,8 +8,6 @@ use CUGZ\GzipCacheEnterprise;
 
 class GzipCache
 {
-	public static $instance = NULL;
-
 	public static $options_group = "cugz_options_group";
 
 	public static $learn_more = "https://wpgzipcache.com/compare-plans/";
