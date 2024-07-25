@@ -4,7 +4,7 @@ Tags: gzip, cache, speed, performance, nginx
 Requires at least: 6.4.3
 Tested up to: 6.6.1
 Requires PHP: 7.4
-Stable tag: 2.8
+Stable tag: 2.8.1
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -42,8 +42,8 @@ download the required configuration from the plugin settings page (Tools => Cach
 3. Search for the **Cache Using Gzip** plugin.
 4. Click on **Install Now** and wait until the plugin is installed successfully.
 5. Activate the plugin by clicking **Activate** now on the success page.
-6. Visit the plugin settings page (Tools => Cache Using Gzip) to download the reqired apache/nginx config rules.
-7. Add the rules to your .htaccess or nginx.conf.
+6. If you're running WordPress on an Apache server, the .htaccess file should be modified on activation. If it wasn't, visit the plugin settings page (Tools => Cache Using Gzip) to download the reqired apache/nginx config rules.
+7. Add the rules to your .htaccess or nginx.conf, if necessary.
 
 == Screenshots ==
 
@@ -55,6 +55,10 @@ download the required configuration from the plugin settings page (Tools => Cach
 Automatic updates should work generally smoothly, but we still recommend you back up your site.
 
 == Changelog ==
+
+= 2.8.1 =
+
+* Automatically modify .htaccess on plugin activation/deactivation
 
 = 2.8 =
 

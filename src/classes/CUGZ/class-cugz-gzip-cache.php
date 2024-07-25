@@ -247,8 +247,81 @@ class GzipCache
 			   isset($array['is_enterprise']) && $array['is_enterprise'] && !CUGZ_ENTERPRISE;
 	}
 
+	protected function cugz_modify_htaccess($action = 0)
+	{
+		$this->cugz_get_filesystem();
+
+		global $wp_filesystem;
+
+	    $file_path = ABSPATH . ".htaccess";
+
+	    if (!file_exists($file_path)) {
+
+	        return false;
+
+	    }
+
+	    $existing_content = $wp_filesystem->get_contents($file_path);
+	    
+	    $start_tag = "# BEGIN {$this->plugin_name}";
+
+	    $end_tag = "# END {$this->plugin_name}";
+	    
+	    $start_pos = strpos($existing_content, $start_tag);
+
+	    $end_pos = strpos($existing_content, $end_tag);
+
+	    if(!$action) {
+
+	    	if ($start_pos === false || $end_pos === false) {
+
+		        return false;
+
+		    }
+
+	    	$end_pos += strlen($end_tag) + 1;
+
+		    $before_block = substr($existing_content, 0, $start_pos);
+
+		    $after_block = substr($existing_content, $end_pos);
+
+		    $new_content = $before_block . $after_block;
+		    
+		    if ($wp_filesystem->put_contents($file_path, ltrim($new_content)) === false) {
+
+		        return false;
+
+		    }
+
+	    } else {
+
+	    	if ($start_pos !== false || $end_pos !== false) {
+
+		        return false;
+
+		    }
+
+	    	$template = plugin_dir_url(CUGZ_PLUGIN_PATH) . "templates/htaccess.sample";
+
+	    	$directives = $wp_filesystem->get_contents($template);
+
+	    	$new_content = $directives . "\n\n" . $existing_content;
+
+		    if ($wp_filesystem->put_contents($file_path, $new_content) === false) {
+
+		        return false;
+
+		    }
+
+	    }
+
+	    return true;
+	}
+
 	public function cugz_plugin_activation()
     {
+    	$this->cugz_modify_htaccess(1);
+
     	set_transient('cugz_notice', [
             'message' => "You may need to preload your cache after activating or deactivating a new plugin or theme. Visit Cache Using Gzip plugin <a href='" . esc_url($this->settings_url) . "'>settings</a>.",
             'type'    => "success"
@@ -264,6 +337,8 @@ class GzipCache
 
     public function cugz_plugin_deactivation()
     {
+    	$this->cugz_modify_htaccess();
+
     	$this->cugz_delete_cache_dir(dirname($this->cache_dir));
 
         foreach (self::$options as $option => $array)

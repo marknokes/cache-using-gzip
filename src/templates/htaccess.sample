@@ -127,13 +127,3 @@ FileETag None
 	RewriteRule .* "/wp-content/cugz_gzip_cache/%{ENV:GZ_HOST}%{REQUEST_URI}/index%{ENV:GZ_SSL}.html%{ENV:GZ_ENC}" [L]
 </IfModule>
 # END Cache Using Gzip
-
-# BEGIN WordPress
-RewriteEngine On
-RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
-RewriteBase /
-RewriteRule ^index\.php$ - [L]
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule . /index.php [L]
-# END WordPress
