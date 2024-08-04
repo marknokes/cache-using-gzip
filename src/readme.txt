@@ -1,4 +1,4 @@
-=== Cache Using Gzip ===
+=== Cache Using Gzip - Gzip performance for fast page loading ===
 Contributors: marknokes
 Tags: gzip, cache, speed, performance, nginx
 Requires at least: 6.4.3
