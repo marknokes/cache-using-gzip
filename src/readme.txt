@@ -32,7 +32,9 @@ download the required configuration from the plugin settings page (Tools => Cach
 = Requirements =
 
 * WordPress Version 6.4.3 or newer (installed)
-* PHP Version 7.2 or newer
+* Apache or Nginx web server
+* PHP Version 7.4 or newer
+* PHP ZLIB extension enabled
 * The Cache Using Gzip plugin requires a "pretty" URL. Confirm your permalink structure is something other than "Plain" (Settings => Permalinks).
 
 = Installation instructions =
