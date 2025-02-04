@@ -58,6 +58,10 @@ Automatic updates should work generally smoothly, but we still recommend you bac
 
 == Changelog ==
 
+= 2.8.2 =
+
+* Add sanitize methods for register_setting
+
 = 2.8.1 =
 
 * Automatically modify .htaccess on plugin activation/deactivation
