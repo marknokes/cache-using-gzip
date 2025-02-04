@@ -19,38 +19,44 @@ class GzipCache
 			'name' => 'Cache these types:',
 			'type' => 'plugin_post_types',
 			'description' => 'Ctrl + click to select/deselect multiple post types.',
-			'default_value' => ['post', 'page']
+			'default_value' => ['post', 'page'],
+			'sanitize_callback' => 'CUGZ\GzipCache::cugz_sanitize_array'
 		],
 		'cugz_status' => [
 			'type' => 'skip_settings_field',
-			'default_value' => 'empty'
+			'default_value' => 'empty',
+			'sanitize_callback' => 'sanitize_text_field'
 		],
 		'cugz_inline_js_css' => [
             'name' => 'Move css/js inline',
             'type' => 'checkbox',
             'description' => 'Removes links to local css/js and replaces with their contents. This may or may not break some theme layouts or functionality.',
-            'default_value' => 0
+            'default_value' => 0,
+            'sanitize_callback' => 'CUGZ\GzipCache::cugz_sanitize_number'
         ],
         'cugz_never_cache' => [
             'name' => 'Never cache:',
             'type' => 'text',
             'is_premium' => true,
             'description' => 'Pipe separated list of slugs. Example: my-great-page|another-page|a-third-page-slug',
-            'default_value' => ''
+            'default_value' => '',
+            'sanitize_callback' => 'sanitize_text_field'
         ],
         'cugz_include_archives' => [
             'name' => 'Cache archives on preload, update, publish',
             'type' => 'checkbox',
             'is_premium' => true,
             'description' => 'This could increase preload time significantly if you have many categories/tags',
-            'default_value' => 0
+            'default_value' => 0,
+            'sanitize_callback' => 'CUGZ\GzipCache::cugz_sanitize_number'
         ],
         'cugz_datepicker' => [
         	'name' => 'Don\'t cache items before',
         	'type' => 'datepicker',
         	'is_enterprise' => true,
         	'description' => 'If you have a large number of pages/posts/etc., specify a date before which items will not be cached.',
-        	'default_value' => '' 
+        	'default_value' => '',
+        	'sanitize_callback' => 'sanitize_text_field'
         ]
 	];
 
@@ -96,6 +102,22 @@ class GzipCache
 		$this->cache_dir = strtok(WP_CONTENT_DIR . "/cugz_gzip_cache/" . $this->host, ':');
 
 		$this->settings_url = admin_url(self::$options_page_url);
+	}
+
+	public static function cugz_sanitize_number($input)
+	{
+		return intval($input);
+	}
+
+	public static function cugz_sanitize_array($input)
+	{
+		if (!is_array($input)) {
+
+            return [];
+
+        }
+
+        return array_map('sanitize_text_field', $input);
 	}
 
 	public function cugz_add_actions()
@@ -638,7 +660,7 @@ class GzipCache
 	        	$css_content = wp_remote_retrieve_body(wp_remote_get($css_link));
 
 	        	if ($css_content === false) {
-
+	        		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 		            error_log('Error: Unable to retrieve css content from ' . $css_link);
 		            
 		        }
@@ -655,7 +677,7 @@ class GzipCache
 	    		$script_content = wp_remote_retrieve_body(wp_remote_get($matches[1]));
 		        
 		        if ($script_content === false) {
-
+		        	// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 		            error_log('Error: Unable to retrieve script content from ' . $matches[1]);
 		            
 		        }
@@ -783,7 +805,9 @@ class GzipCache
 
 		}
 
-		$do = sanitize_text_field(wp_unslash($_POST['do'])) ?: '';
+		$do = isset($_POST['do'])
+			? sanitize_text_field(wp_unslash($_POST['do']))
+			: '';
 
 		switch ($do)
 		{
@@ -824,7 +848,9 @@ class GzipCache
 
 			case 'single':
 
-				$post_id = absint($_POST['post_id']);
+				$post_id = isset($_POST['post_id'])
+					? absint($_POST['post_id'])
+					: 0;
 
 				$post = get_post($post_id);
 
@@ -882,7 +908,15 @@ class GzipCache
 		{
 			if('skip_settings_field' === $array['type'] || self::cugz_skip_option($array)) continue;
 		
-			register_setting(self::$options_group, $option);
+			// phpcs:ignore PluginCheck.CodeAnalysis.SettingSanitization.register_settingDynamic
+			register_setting(
+				self::$options_group,
+				$option,
+				[
+                    'type' 				=> gettype($array['default_value']),
+                    'sanitize_callback' => $array['sanitize_callback']
+                ]
+			);
 		}
 	}
 
@@ -898,7 +932,9 @@ class GzipCache
 
 	protected static function cugz_get_server_type()
 	{
-		$server_software = sanitize_text_field(wp_unslash($_SERVER['SERVER_SOFTWARE'])) ?? '';
+		$server_software = isset($_SERVER['SERVER_SOFTWARE'])
+			? sanitize_text_field(wp_unslash($_SERVER['SERVER_SOFTWARE']))
+			: '';
 
 	    if (strpos($server_software, 'Apache') !== false) {
 
