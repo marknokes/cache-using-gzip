@@ -4,11 +4,11 @@ Tags: gzip, cache, speed, performance, nginx
 Requires at least: 6.4.3
 Tested up to: 6.7.2
 Requires PHP: 7.4
-Stable tag: 2.8.2
+Stable tag: 2.8.3
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Creates gzipped files on your server to immensly improve page speed for site visitors
+Creates gzip files on your server to immensly improve page speed for site visitors
 
 == Description ==
 
@@ -57,6 +57,9 @@ download the required configuration from the plugin settings page (Tools => Cach
 Automatic updates should work generally smoothly, but we still recommend you back up your site.
 
 == Changelog ==
+
+= 2.8.3 =
+* Improve option handling
 
 = 2.8.2 =
 
