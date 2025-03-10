@@ -191,29 +191,33 @@ class GzipCache
 	}
 
 	public static function cugz_get_option($option_name)
-	{
-		if(self::cugz_skip_option(self::$options[$option_name])) return false;
+    {
+        if(isset(self::$options[$option_name]) && self::cugz_skip_option(self::$options[$option_name])) return false;
 
-	    $cached_value = wp_cache_get($option_name, 'options');
-	    
-	    if ($cached_value === false) {
+        $cached_value = wp_cache_get($option_name, 'options');
+        
+        if ($cached_value === false) {
 
-	        $option_value = get_option($option_name);
+            $option_value = get_option($option_name);
 
-	        if ($option_value !== false) {
+            if ($option_value === false) {
 
-	            wp_cache_set($option_name, $option_value, 'options');
+                $option_value = self::$options[$option_name]['default'] ?? false;
 
-	        }
+                add_option($option_name, $option_value, '', false);
 
-	        return $option_value;
+            }
 
-	    } else {
+            wp_cache_set($option_name, $option_value, 'options');
 
-	        return $cached_value;
+            return $option_value;
 
-	    }
-	}
+        } else {
+
+            return maybe_unserialize($cached_value);
+
+        }
+    }
 
 	public function cugz_notice($message, $type)
 	{
