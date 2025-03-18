@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Plugin Name: Cache Using Gzip
  * Version: 2.8.3
@@ -14,12 +15,12 @@
  * Requires PHP: 7.4
  */
 
-if (!defined('ABSPATH')) exit;
+if (!defined('ABSPATH')) {
+    exit;
+}
 
 use CUGZ\GzipCache;
-
 use CUGZ\GzipCachePluginExtras;
-
 use CUGZ\GzipCacheEnterprise;
 
 require_once 'autoload.php';
@@ -36,17 +37,17 @@ $GzipCache = new GzipCache();
 
 if (!extension_loaded('zlib')) {
 
-	$GzipCache->zlib_enabled = false;
+    $GzipCache->zlib_enabled = false;
 
-    add_action('admin_notices', function() use ($GzipCache) {
+    add_action('admin_notices', function () use ($GzipCache) {
 
-		$GzipCache->cugz_notice("Zlib extension is not enabled. You must enable the zlib extension in order to use the <strong>" . esc_html($GzipCache->plugin_name) . "</strong> plugin.", "warning");
+        $GzipCache->cugz_notice("Zlib extension is not enabled. You must enable the zlib extension in order to use the <strong>" . esc_html($GzipCache->plugin_name) . "</strong> plugin.", "warning");
 
-	});
+    });
 
 }
 
-$GzipCache->GzipCachePluginExtras = CUGZ_PLUGIN_EXTRAS ? new GzipCachePluginExtras(): NULL;
+$GzipCache->GzipCachePluginExtras = CUGZ_PLUGIN_EXTRAS ? new GzipCachePluginExtras() : null;
 
 register_activation_hook(CUGZ_PLUGIN_PATH, [$GzipCache, 'cugz_plugin_activation']);
 

@@ -4,7 +4,9 @@ function cugz_autoload($class_name)
 {
     $namespace = 'CUGZ\\';
 
-    if(strpos($class_name, $namespace) !== 0) return;
+    if (strpos($class_name, $namespace) !== 0) {
+        return;
+    }
 
     $class_name = substr($class_name, strlen($namespace));
 
@@ -17,6 +19,6 @@ function cugz_autoload($class_name)
     if (file_exists($file)) {
 
         require_once $file;
-        
+
     }
 }
