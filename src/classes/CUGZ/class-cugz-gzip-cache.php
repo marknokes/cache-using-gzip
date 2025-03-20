@@ -7,12 +7,29 @@ use CUGZ\GzipCacheEnterprise;
 
 class GzipCache
 {
+    /**
+    * WordPress options group
+     *
+     * @var string
+    */
     public static $options_group = "cugz_options_group";
-
+    /**
+    * Link to compare plans
+     *
+     * @var string
+    */
     public static $learn_more = "https://wpgzipcache.com/compare-plans/";
-
+    /**
+    * Options page url
+     *
+     * @var string
+    */
     public static $options_page_url = "tools.php?page=cugz_gzip_cache";
-
+    /**
+    * Plugin options array
+     *
+     * @var array
+    */
     public static $options = [
         'cugz_plugin_post_types' => [
             'name' => 'Cache these types:',
@@ -58,21 +75,90 @@ class GzipCache
             'sanitize_callback' => 'sanitize_text_field'
         ]
     ];
-
-    public $cugz_plugin_post_types;
-    public $cugz_inline_js_css;
-    public $cugz_status;
-    public $host;
-    public $cache_dir;
-    public $site_url;
-    public $plugin_version;
-    public $plugin_name;
-    public $settings_url;
+    /**
+    * Post types to be cached
+     *
+     * @var array
+    */
+    public $cugz_plugin_post_types = [];
+    /**
+    * Whether to place CSS inline on cached page
+     *
+     * @var int
+    */
+    public $cugz_inline_js_css = 0;
+    /**
+    * Current status of cache. preloaded, empty, processing
+     *
+     * @var string
+    */
+    public $cugz_status = '';
+    /**
+    * WordPress website hostname
+     *
+     * @var string
+    */
+    public $host = '';
+    /**
+    * Directory path on server in which cache files will be stored
+     *
+     * @var string
+    */
+    public $cache_dir = '';
+    /**
+    * WordPress website url
+     *
+     * @var string
+    */
+    public $site_url = '';
+    /**
+    * Current plugin version
+     *
+     * @var string
+    */
+    public $plugin_version = '';
+    /**
+    * The plugin name
+     *
+     * @var string
+    */
+    public $plugin_name = '';
+    /**
+    * Complete options page url including admin url
+     *
+     * @var string
+    */
+    public $settings_url = '';
+    /**
+    * Whether the PHP ZLIB extension is enabled on the server
+     *
+     * @var bool
+    */
     public $zlib_enabled = true;
-    public $cugz_never_cache;
-    public $cugz_include_archives;
-    public $cugz_datepicker;
-    public $GzipCachePluginExtras;
+    /**
+    * Pipe seperated list of page slugs to never cache
+     *
+     * @var string
+    */
+    public $cugz_never_cache = '';
+    /**
+    * Whether to include archive pages in cache preload
+     *
+     * @var int
+    */
+    public $cugz_include_archives = 0;
+    /**
+    * A date before which items will not be cached.
+     *
+     * @var string
+    */
+    public $cugz_datepicker = '';
+    /**
+    * GzipCachePluginExtras class if exists
+     *
+     * @var object
+    */
+    public $GzipCachePluginExtras = null;
     /**
     * Constructor for the class.
      * Initializes class variables and sets up action hooks for option updates.
