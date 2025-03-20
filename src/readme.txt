@@ -58,6 +58,14 @@ Automatic updates should work generally smoothly, but we still recommend you bac
 
 == Changelog ==
 
+= 2.8.4 =
+Improvement: remove superfluous import statements
+Improvement: normalize line endings
+Improvement: add docblocks to class properties
+Improvement: add docblocks to class methods
+Improvement: php cs fixer
+Improvement: add gitattributes
+
 = 2.8.3 =
 * Improve option handling
 
