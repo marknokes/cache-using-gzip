@@ -1,5 +1,12 @@
 <?php
 
+/**
+* Autoload function for CUGZ classes.
+ *
+ * @param string $class_name The name of the class to be loaded.
+ *
+ * @return void
+*/
 function cugz_autoload($class_name)
 {
     $namespace = 'CUGZ\\';

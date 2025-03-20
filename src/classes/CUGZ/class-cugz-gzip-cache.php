@@ -73,7 +73,12 @@ class GzipCache
     public $cugz_include_archives;
     public $cugz_datepicker;
     public $GzipCachePluginExtras;
-
+    /**
+    * Constructor for the class.
+     * Initializes class variables and sets up action hooks for option updates.
+     *
+     * @since 1.0.0
+    */
     public function __construct()
     {
         foreach (self::$options as $option => $array) {
@@ -103,12 +108,22 @@ class GzipCache
 
         $this->settings_url = admin_url(self::$options_page_url);
     }
-
+    /**
+    * Sanitizes a given input and returns it as an integer value.
+     *
+     * @param mixed $input The input to be sanitized.
+     * @return int The sanitized input as an integer.
+    */
     public static function cugz_sanitize_number($input)
     {
         return intval($input);
     }
-
+    /**
+    * Sanitizes an array by applying the sanitize_text_field function to each element.
+     *
+     * @param array $input The array to be sanitized.
+     * @return array The sanitized array.
+    */
     public static function cugz_sanitize_array($input)
     {
         if (!is_array($input)) {
@@ -119,7 +134,11 @@ class GzipCache
 
         return array_map('sanitize_text_field', $input);
     }
-
+    /**
+    * Adds necessary actions for the plugin.
+     *
+     * @since 1.0.0
+    */
     public function cugz_add_actions()
     {
         add_action('init', [$this, 'cugz_get_filesystem']);
@@ -162,7 +181,15 @@ class GzipCache
 
         }
     }
-
+    /**
+    * Adds filters for the plugin.
+     *
+     * This function checks if zlib is enabled and adds a filter for the plugin action links and plugin row meta.
+     *
+     * @since 1.0.0
+     * @access public
+     * @return void
+    */
     public function cugz_add_filters()
     {
         if ($this->zlib_enabled) {
@@ -173,7 +200,14 @@ class GzipCache
 
         add_filter('plugin_row_meta', [$this, 'cugz_plugin_row_meta'], 10, 2);
     }
-
+    /**
+    * Clears the cached value for the specified option.
+     *
+     * @param mixed $old_value The old value of the option.
+     * @param mixed $new_value The new value of the option.
+     * @param string $option_name The name of the option to clear the cache for.
+     * @return void
+    */
     public static function cugz_clear_option_cache($old_value, $new_value, $option_name)
     {
         if (array_key_exists($option_name, self::$options)) {
@@ -182,14 +216,25 @@ class GzipCache
 
         }
     }
-
+    /**
+    * Updates the value of a specified option in the WordPress database.
+     *
+     * @param string $option The name of the option to be updated.
+     * @param mixed $value The new value for the option.
+     * @return void
+    */
     private static function update_option($option, $value)
     {
         self::cugz_clear_option_cache('', $value, $option);
 
         update_option($option, $value, false);
     }
-
+    /**
+    * Retrieves the value of a specific option.
+     *
+     * @param string $option_name The name of the option to retrieve.
+     * @return mixed|false The value of the option, or false if the option is skipped.
+    */
     public static function cugz_get_option($option_name)
     {
         if (isset(self::$options[$option_name]) && self::cugz_skip_option(self::$options[$option_name])) {
@@ -220,7 +265,13 @@ class GzipCache
 
         }
     }
-
+    /**
+    * Displays a notice message on the screen.
+     *
+     * @param string $message The message to be displayed.
+     * @param string $type The type of notice to be displayed.
+     * @return void
+    */
     public function cugz_notice($message, $type)
     {
         ?>
@@ -229,7 +280,11 @@ class GzipCache
 	    </div>
 	    <?php
     }
-
+    /**
+    * Retrieves the WordPress filesystem for use in caching with gzip.
+     *
+     * @return bool|WP_Filesystem The WordPress filesystem if successful, false otherwise.
+    */
     public function cugz_get_filesystem()
     {
         if (!function_exists('WP_Filesystem')) {
@@ -248,7 +303,11 @@ class GzipCache
 
         }
     }
-
+    /**
+    * Dequeues scripts and styles for Contact Form 7 if the post does not contain a contact form.
+     *
+     * @global WP_Post $post The current post object.
+    */
     public function cugz_dequeue_scripts()
     {
         global $post;
@@ -268,13 +327,23 @@ class GzipCache
             }
         }
     }
-
+    /**
+    * Checks if the given array contains the necessary information to skip a certain option.
+     *
+     * @param array $array The array containing the necessary information.
+     * @return bool Returns true if the option should be skipped, false otherwise.
+    */
     protected static function cugz_skip_option($array)
     {
         return isset($array['is_premium']) && $array['is_premium'] && !CUGZ_PLUGIN_EXTRAS ||
                isset($array['is_enterprise']) && $array['is_enterprise'] && !CUGZ_ENTERPRISE;
     }
-
+    /**
+    * Modifies the .htaccess file for the plugin.
+     *
+     * @param int $action Optional. Determines whether to add or remove the plugin's directives from the .htaccess file.
+     * @return bool True on success, false on failure.
+    */
     protected function cugz_modify_htaccess($action = 0)
     {
         $this->cugz_get_filesystem();
@@ -345,7 +414,14 @@ class GzipCache
 
         return true;
     }
-
+    /**
+    * Activates the Cache Using Gzip plugin.
+     *
+     * This function modifies the .htaccess file, sets a transient notice, and updates all plugin options to their default values.
+     *
+     * @since 1.0.0
+     * @return void
+    */
     public function cugz_plugin_activation()
     {
         $this->cugz_modify_htaccess(1);
@@ -363,7 +439,12 @@ class GzipCache
             update_option($option, $array['default_value'], '', false);
         }
     }
-
+    /**
+    * Deactivates the plugin by modifying the .htaccess file, deleting the cache directory, and clearing cached options.
+     *
+     * @since 1.0.0
+     * @access public
+    */
     public function cugz_plugin_deactivation()
     {
         $this->cugz_modify_htaccess();
@@ -376,12 +457,21 @@ class GzipCache
             delete_option($option);
         }
     }
-
+    /**
+    * Returns the filename for the specified type, taking into account whether the current connection is secure or not.
+     *
+     * @param string $type Optional. The type of file to retrieve. Default empty.
+     * @return string The filename for the specified type, with the appropriate protocol prefix.
+    */
     protected function cugz_get_filename($type = "")
     {
         return is_ssl() ? "/index-https.html$type" : "/index.html$type";
     }
-
+    /**
+    * Enqueues necessary scripts and styles for the admin pages.
+     *
+     * @param string $hook The current admin page hook.
+    */
     public function cugz_enqueue_admin_scripts($hook)
     {
         if ('edit.php' !== $hook && 'tools_page_cugz_gzip_cache' !== $hook) {
@@ -412,12 +502,22 @@ class GzipCache
 
         wp_localize_script('cugz_js', 'cugz_ajax_var', $local_args);
     }
-
+    /**
+    * Displays the options page for the CUGZ plugin.
+     * This page allows users to download the plugin's configuration template.
+     *
+     * @return void
+    */
     public function cugz_post_options_page()
     {
         echo '<a class="button button-float-right" href="' . esc_url(self::cugz_get_config_template_link()) . '" target="_blank">Download config</a>';
     }
-
+    /**
+    * Returns a string of HTML options for a select input, based on the given value.
+     *
+     * @param array $value An array of post types to be selected.
+     * @return string A string of HTML options for a select input.
+    */
     public static function cugz_get_post_type_select_options($value)
     {
         $options = "";
@@ -436,7 +536,13 @@ class GzipCache
 
         return $options;
     }
-
+    /**
+    * This function handles the transition of a post's status.
+     *
+     * @param string $new_status The new status of the post.
+     * @param string $old_status The old status of the post.
+     * @param object $post The post object.
+    */
     public function cugz_transition_post_status($new_status, $old_status, $post)
     {
         $status_array = [
@@ -495,7 +601,11 @@ class GzipCache
 
         $this->cugz_refresh_archives($post);
     }
-
+    /**
+    * Refreshes the archives for a given post.
+     *
+     * @param WP_Post $post The post to refresh the archives for.
+    */
     public function cugz_refresh_archives($post)
     {
         if (!get_post_type_archive_link($post->post_type)) {
@@ -512,7 +622,11 @@ class GzipCache
             }
         }
     }
-
+    /**
+    * Declares compatibility for the Custom Order Tables feature in the plugin.
+     *
+     * @return void
+    */
     public function cugz_wc_declare_compatibility()
     {
         if (class_exists(FeaturesUtil::class)) {
@@ -521,7 +635,12 @@ class GzipCache
 
         }
     }
-
+    /**
+    * Retrieves an array of links for the given post.
+     *
+     * @param WP_Post|null $post Optional. The post object to retrieve links for. Defaults to null.
+     * @return array An array of links for the given post.
+    */
     public function cugz_get_links($post = null)
     {
         $is_preload = $post === null;
@@ -555,7 +674,11 @@ class GzipCache
 
         return $links;
     }
-
+    /**
+    * Retrieves an array of post links for the specified post types.
+     *
+     * @return array An array of post links.
+    */
     protected function cugz_get_posts()
     {
         $links = [];
@@ -574,7 +697,12 @@ class GzipCache
 
         return $links;
     }
-
+    /**
+    * Creates a folder structure from the given URL.
+     *
+     * @param string $url The URL to create the folder structure from.
+     * @return string|bool The path to the created directory, or false if the URL is set to never be cached.
+    */
     public function cugz_create_folder_structure_from_url($url)
     {
         if (isset($this->GzipCachePluginExtras) && $this->GzipCachePluginExtras->cugz_never_cache($url)) {
@@ -607,7 +735,12 @@ class GzipCache
 
         return $current_directory;
     }
-
+    /**
+    * Accepts a string on unminified CSS and removes spaces and comments
+     *
+     * @param string $css unminified CSS
+     * @return string Returns minified CSS
+    */
     protected function cugz_minify_css($css)
     {
         $css = preg_replace('/\s+/', ' ', $css); // Remove multiple spaces
@@ -628,12 +761,23 @@ class GzipCache
 
         return trim($css);
     }
-
+    /**
+    * Checks if the given source is a local script by comparing it to the host.
+     *
+     * @param string $src The source to be checked.
+     * @return bool Returns true if the source is a local script, false otherwise.
+    */
     protected function cugz_is_local_script($src)
     {
         return false !== strpos($src, $this->host);
     }
-
+    /**
+    * Parses the given HTML string, minifying any inline CSS and local CSS and JavaScript files.
+     *
+     * @param string $html The HTML string to be parsed.
+     *
+     * @return string The parsed HTML string.
+    */
     protected function cugz_parse_html($html)
     {
         $pattern_inline_css = '/<style\b[^>]*>(.*?)<\/style>/s';
@@ -693,7 +837,13 @@ class GzipCache
 
         return $html;
     }
-
+    /**
+    * Caches a page by retrieving its HTML content and saving it to a specified directory.
+     *
+     * @param string $url The URL of the page to be cached.
+     * @param string $dir The directory where the cached page will be saved. Defaults to the cache directory specified in the class.
+     * @return bool Returns true if the page was successfully cached, false otherwise.
+    */
     public function cugz_cache_page($url, $dir = "")
     {
         global $wp_filesystem;
@@ -729,7 +879,12 @@ class GzipCache
 
         return $wp_filesystem->put_contents($dir . $this->cugz_get_filename("_gz"), gzencode($html, 9)) ? true : false;
     }
-
+    /**
+    * Deletes a cache directory and all its contents.
+     *
+     * @param string $dir The directory path to be deleted.
+     * @return bool True if the directory was successfully deleted, false otherwise.
+    */
     protected function cugz_delete_cache_dir($dir)
     {
         if (!is_dir($dir)) {
@@ -756,7 +911,12 @@ class GzipCache
 
         return $wp_filesystem->rmdir($dir);
     }
-
+    /**
+    * Cleans a given directory by removing all files and subdirectories within it.
+     *
+     * @param string $dir The directory to be cleaned. If left empty, the cache directory will be used.
+     * @return void
+    */
     protected function cugz_clean_dir($dir = "")
     {
         if ("" === $dir) {
@@ -781,7 +941,12 @@ class GzipCache
 
         }
     }
-
+    /**
+    * Caches the blog page by creating a folder structure from the given URL and caching the page.
+     *
+     * @param string $url The URL of the blog page to be cached.
+     * @return void
+    */
     protected function cugz_cache_blog_page()
     {
         $url = get_post_type_archive_link('post');
@@ -792,7 +957,14 @@ class GzipCache
 
         }
     }
-
+    /**
+    * Handles the AJAX callback for the plugin.
+     *
+     * This function checks for security nonce, and then performs various actions based on the 'do' parameter passed in the AJAX request.
+     * The possible actions are: check_status, empty, regen, and single.
+     *
+     * @return void
+    */
     public function cugz_callback()
     {
         if (!isset($_POST['nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'ajax-nonce')) {
@@ -869,7 +1041,13 @@ class GzipCache
 
         die;
     }
-
+    /**
+    * Adds custom links to the plugin row meta on the plugin screen.
+     *
+     * @param array $links An array of plugin row meta links.
+     * @param string $file The plugin file path.
+     * @return array The modified array of plugin row meta links.
+    */
     public function cugz_plugin_row_meta($links, $file)
     {
         if (plugin_basename(CUGZ_PLUGIN_PATH) !== $file) {
@@ -888,14 +1066,25 @@ class GzipCache
 
         return !CUGZ_PLUGIN_EXTRAS ? array_merge($links, $upgrade, $bugs) : array_merge($links, $bugs);
     }
-
+    /**
+    * Adds a settings link to the plugin's page on the WordPress admin menu.
+     *
+     * @param array $links An array of existing links for the plugin.
+     * @return array The modified array of links with the added settings link.
+    */
     public function cugz_settings_link($links)
     {
         $settings_link = ["<a href='" . esc_url($this->settings_url) . "'>Settings</a>"];
 
         return array_merge($settings_link, $links);
     }
-
+    /**
+    * Registers the settings for the plugin.
+     *
+     * @since 1.0.0
+     *
+     * @return void
+    */
     public function cugz_register_settings()
     {
         foreach (self::$options as $option => $array) {
@@ -914,17 +1103,29 @@ class GzipCache
             );
         }
     }
-
+    /**
+    * Registers the options page for the plugin.
+     *
+     * @return void
+    */
     public function cugz_register_options_page()
     {
         add_management_page('Settings', 'Cache Using Gzip', 'manage_options', 'cugz_gzip_cache', [$this,'cugz_options_page']);
     }
-
+    /**
+    * Displays the options page for the plugin.
+     *
+     * @return void
+    */
     public function cugz_options_page()
     {
         include dirname(CUGZ_PLUGIN_PATH) . '/templates/options-page.php';
     }
-
+    /**
+    * Retrieves the type of server software being used.
+     *
+     * @return string The type of server software, either "Apache", "Nginx", or "Unknown".
+    */
     protected static function cugz_get_server_type()
     {
         $server_software = isset($_SERVER['SERVER_SOFTWARE'])
@@ -945,7 +1146,11 @@ class GzipCache
 
         }
     }
-
+    /**
+    * Retrieves the link to the configuration template based on the server type.
+     *
+     * @return string The link to the configuration template.
+    */
     public static function cugz_get_config_template_link()
     {
         $link = "";
@@ -968,7 +1173,11 @@ class GzipCache
 
         return $link;
     }
-
+    /**
+    * Prints a comment in the HTML source code indicating that the performance has been optimized by using Cache Using Gzip.
+     *
+     * @return void
+    */
     public function cugz_print_comment()
     {
         printf("\n\t<!-- %s -->\n", esc_html(sprintf(
