@@ -170,28 +170,11 @@ class GzipCache
     public $cugz_datepicker = '';
 
     /**
-     * GzipCachePluginExtras class if exists.
-     *
-     * @var object
-     */
-    public $GzipCachePluginExtras;
-
-    /**
      * Constructor for the class.
      * Initializes class variables and sets up action hooks for option updates.
      */
     public function __construct()
     {
-        foreach (self::$options as $option => $array) {
-            if (self::cugz_skip_option($array)) {
-                continue;
-            }
-
-            $this->{$option} = self::cugz_get_option($option);
-
-            add_action("update_option_{$option}", [$this, 'cugz_clear_option_cache'], 10, 3);
-        }
-
         $plugin_data = get_file_data(CUGZ_PLUGIN_PATH, [
             'Version' => 'Version',
             'Name' => 'Plugin Name',
@@ -208,6 +191,10 @@ class GzipCache
         $this->cache_dir = strtok(WP_CONTENT_DIR.'/cugz_gzip_cache/'.$this->host, ':');
 
         $this->settings_url = admin_url(self::$options_page_url);
+
+        $this->cugz_set_props_from_options();
+
+        $this->cugz_zlib_check();
     }
 
     /**
@@ -593,6 +580,8 @@ class GzipCache
      */
     public function cugz_get_links($post = null)
     {
+        global $GzipCachePluginExtras;
+
         $is_preload = null === $post;
 
         $links = [];
@@ -613,8 +602,8 @@ class GzipCache
             $cat_ids = wp_get_post_categories($post_id);
         }
 
-        if (isset($this->GzipCachePluginExtras)) {
-            $links = $this->GzipCachePluginExtras->get_archive_links($links, $term_ids, $cat_ids);
+        if (isset($GzipCachePluginExtras)) {
+            $links = $GzipCachePluginExtras->get_archive_links($links, $term_ids, $cat_ids);
         }
 
         return $links;
@@ -629,7 +618,9 @@ class GzipCache
      */
     public function cugz_create_folder_structure_from_url($url)
     {
-        if (isset($this->GzipCachePluginExtras) && $this->GzipCachePluginExtras->cugz_never_cache($url)) {
+        global $GzipCachePluginExtras;
+
+        if (isset($GzipCachePluginExtras) && $GzipCachePluginExtras->cugz_never_cache($url)) {
             return false;
         }
 
@@ -880,6 +871,37 @@ class GzipCache
             'Performance optimized by Cache Using Gzip. Learn more: %s',
             esc_url(self::$learn_more)
         )));
+    }
+
+    /**
+     * Sets class properties using self::$options and adds an update_option_{option_name} hook for each one.
+     */
+    protected function cugz_set_props_from_options()
+    {
+        foreach (self::$options as $option => $array) {
+            if (self::cugz_skip_option($array)) {
+                continue;
+            }
+
+            $this->{$option} = self::cugz_get_option($option);
+
+            add_action("update_option_{$option}", [$this, 'cugz_clear_option_cache'], 10, 3);
+        }
+    }
+
+    /**
+     * Check if the zlib extension is enabled and display an admin notice if not.
+     */
+    protected function cugz_zlib_check()
+    {
+        if (!extension_loaded('zlib')) {
+            $this->zlib_enabled = false;
+
+            set_transient('cugz_notice', [
+                'message' => 'Zlib extension is not enabled. You must enable the zlib extension in order to use the <strong>'.esc_html($this->plugin_name).'</strong> plugin.',
+                'type' => 'warning',
+            ], 3600);
+        }
     }
 
     /**
