@@ -16,6 +16,32 @@ The [Cache Using Gzip](https://wpgzipcache.com/) plugin for WordPress improves p
 cache in settings, download the required config settings and add to your Apache or Nginx server config, and all of
 your posts and pages will be delivered to site visitors blazingly fast!
 
+= Cache Using Gzip Features =
+- Unlimited downloads
+- Unlimited domains 
+
+= Cache Using Gzip Premium Features =
+- Unlimited downloads
+- 1 domain
+- Support for custom post types
+- A cache link on posts and pages let you cache individual items on the fly
+- Cache WooCommerce products and product category/tag archives
+- Exclude a list of page slugs from ever being cached
+- Use the bulk edit menu for pages, posts, etc. to cache a selection 
+
+= Cache Using Gzip Enterprise Features =
+- Unlimited downloads
+- Unlimited domains
+- Support for custom post types
+- A cache link on posts and pages let you cache individual items on the fly
+- Cache WooCommerce products and product category/tag archives
+- Exclude a list of page slugs from ever being cached
+- Use the bulk edit menu for pages, posts, etc. to cache a selection
+- Specify a date before which items will not be cached
+- Enterprise priority support 
+
+[Compare plans at https://wpgzipcache.com/compare-plans/](https://wpgzipcache.com/compare-plans/)
+
 == Frequently Asked Questions ==
 
 = Where can I report bugs? =
