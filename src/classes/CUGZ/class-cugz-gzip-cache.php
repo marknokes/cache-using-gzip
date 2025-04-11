@@ -1104,6 +1104,10 @@ class GzipCache
                     error_log('Error: Unable to retrieve script content from '.$matches[1]);
                 }
 
+                if (0 === strpos($script_content, 'import')) {
+                    return '<script type="module">'.$script_content;
+                }
+
                 return '<script>'.$script_content;
             }
 
