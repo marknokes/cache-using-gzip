@@ -1,3 +1,4 @@
 src/classes/CUGZ/class-cugz-gzip-cache-enterprise.php
 src/classes/CUGZ/class-cugz-gzip-cache-plugin-extras.php
+src/js/plugin-update*
 dist
