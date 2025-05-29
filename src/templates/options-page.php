@@ -75,16 +75,42 @@ use CUGZ\GzipCachePluginExtras;
 										<?php
                                 break;
 
+                            case 'select':
+                                ?>
+										<select name='<?php echo esc_attr($name); ?>'>
+										<?php
+                                $options = '';
+
+                                $value = $value ?: [];
+
+                                foreach ($array['options'] as $option) {
+                                    $selected = selected($option, $value, false);
+
+                                    $options .= "<option value='{$option}' {$selected}>{$option}</option>";
+                                }
+
+                                echo wp_kses($options, [
+                                    'option' => [
+                                        'value' => [],
+                                        'selected' => [],
+                                    ],
+                                ]);
+                                ?>
+										</select>
+										<?php
+                                break;
+
                             case 'plugin_post_types':
                                 ?>
 										<select name='<?php echo esc_attr($name); ?>[]' multiple='multiple'>
-											<?php
-                                    $options = [
-                                        'option' => [
-                                            'value' => [],
-                                            'selected' => [],
-                                        ],
-                                    ];
+										<?php
+                                $options = [
+                                    'option' => [
+                                        'value' => [],
+                                        'selected' => [],
+                                    ],
+                                ];
+
                                 if (!CUGZ_PLUGIN_EXTRAS || !GzipCachePluginExtras::cugz_onboarding_complete()) {
                                     echo wp_kses(self::cugz_get_post_type_select_options($value), $options);
                                 } else {
@@ -93,7 +119,7 @@ use CUGZ\GzipCachePluginExtras;
                                 ?>
 										</select>
 										<?php
-                                        break;
+                                break;
 
                             default:
                                 ?>
