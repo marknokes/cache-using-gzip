@@ -86,7 +86,7 @@ Automatic updates should work generally smoothly, but we still recommend you bac
 
 = 2.8.7 =
 Bugfix: getting default option value fails if get_option returns bool false
-Improvement: add automatic refresh cache option for home and blog landing pages
+Improvement: add automatic preload cache option
 
 = 2.8.6 =
 Bugfix: Adding inline scripts causes console error for modules

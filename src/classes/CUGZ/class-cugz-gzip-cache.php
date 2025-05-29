@@ -52,10 +52,10 @@ class GzipCache
             'default_value' => 0,
             'sanitize_callback' => 'CUGZ\GzipCache::cugz_sanitize_number',
         ],
-        'cugz_refresh_home_and_blog' => [
-            'name' => 'Refresh home and blog pages:',
+        'cugz_auto_preload' => [
+            'name' => 'Auto preload:',
             'type' => 'select',
-            'description' => 'Refresh the home and blog pages at the specified interval',
+            'description' => 'Refresh the entire cache automatically at the specified interval',
             'options' => ['never', 'hourly', 'twicedaily', 'daily', 'weekly'],
             'default_value' => 'never',
             'sanitize_callback' => 'sanitize_text_field',
@@ -98,7 +98,7 @@ class GzipCache
      *
      * @var array
      */
-    public $cugz_refresh_home_and_blog = [];
+    public $cugz_auto_preload = [];
 
     /**
      * Whether to place CSS inline on cached page.
@@ -261,7 +261,7 @@ class GzipCache
 
         add_action('cugz_post_options_page', [$this, 'cugz_post_options_page']);
 
-        add_action('cugz_cache_home_and_blog', [$this, 'cugz_cache_home_and_blog']);
+        add_action('cugz_cron_auto_preload', [$this, 'cugz_preload_cache']);
 
         if ($this->zlib_enabled) {
             add_action('admin_menu', [$this, 'cugz_register_options_page']);
@@ -295,20 +295,6 @@ class GzipCache
     }
 
     /**
-     * Cache the home and blog pages.
-     */
-    public function cugz_cache_home_and_blog()
-    {
-        $url = home_url();
-
-        if ($dir = $this->cugz_create_folder_structure_from_url($url)) {
-            $this->cugz_cache_page($url, $dir);
-        }
-
-        $this->cugz_cache_blog_page();
-    }
-
-    /**
      * Clears the cached value for the specified option.
      *
      * @param mixed  $old_value   the old value of the option
@@ -322,13 +308,13 @@ class GzipCache
         }
 
         switch ($option_name) {
-            case 'cugz_refresh_home_and_blog':
-                if ($time = wp_next_scheduled('cugz_cache_home_and_blog')) {
-                    wp_unschedule_event($time, 'cugz_cache_home_and_blog');
+            case 'cugz_auto_preload':
+                if ($time = wp_next_scheduled('cugz_cron_auto_preload')) {
+                    wp_unschedule_event($time, 'cugz_cron_auto_preload');
                 }
 
                 if ('never' !== $new_value) {
-                    wp_schedule_event(time(), self::cugz_get_option($option_name), 'cugz_cache_home_and_blog');
+                    wp_schedule_event(time(), self::cugz_get_option($option_name), 'cugz_cron_auto_preload');
                 }
 
                 break;
@@ -465,7 +451,7 @@ class GzipCache
             delete_option($option);
         }
 
-        wp_unschedule_event(wp_next_scheduled('cugz_cache_home_and_blog'), 'cugz_cache_home_and_blog');
+        wp_unschedule_event(wp_next_scheduled('cugz_cron_auto_preload'), 'cugz_cron_auto_preload');
     }
 
     /**
@@ -738,6 +724,28 @@ class GzipCache
     }
 
     /**
+     * Handles preloading.
+     *
+     * This function cleans the cache directory, caches the blog and all other relevent pages
+     */
+    public function cugz_preload_cache()
+    {
+        $this->cugz_clean_dir();
+
+        self::update_option('cugz_status', 'processing');
+
+        $this->cugz_cache_blog_page();
+
+        foreach ($this->cugz_get_links() as $url) {
+            if ($dir = $this->cugz_create_folder_structure_from_url($url)) {
+                $this->cugz_cache_page($url, $dir);
+            }
+        }
+
+        self::update_option('cugz_status', 'preloaded');
+    }
+
+    /**
      * Handles the AJAX callback for the plugin.
      *
      * This function checks for security nonce, and then performs various actions based on the 'do' parameter passed in the AJAX request.
@@ -767,19 +775,7 @@ class GzipCache
                 break;
 
             case 'regen':
-                $this->cugz_clean_dir();
-
-                self::update_option('cugz_status', 'processing');
-
-                $this->cugz_cache_blog_page();
-
-                foreach ($this->cugz_get_links() as $url) {
-                    if ($dir = $this->cugz_create_folder_structure_from_url($url)) {
-                        $this->cugz_cache_page($url, $dir);
-                    }
-                }
-
-                self::update_option('cugz_status', 'preloaded');
+                $this->cugz_preload_cache();
 
                 break;
 
