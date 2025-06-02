@@ -139,6 +139,7 @@ use CUGZ\GzipCachePluginExtras;
 							<p id="processing" class="cache-status"><span class="spinner is-active"></span> Processing...</p>
 							<p id="complete" class="cache-status">&#10004; Preloaded</p>
 							<p id="clean" class="cache-status">&#45; Not preloaded</p>
+							<p><?php do_action('cugz_options_page_next_auto_preload'); ?></p>
 						</td>
 					</tr>
 					<tr>

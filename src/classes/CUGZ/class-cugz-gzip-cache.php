@@ -263,6 +263,8 @@ class GzipCache
 
         add_action('cugz_cron_auto_preload', [$this, 'cugz_preload_cache']);
 
+        add_action('cugz_options_page_next_auto_preload', [$this, 'cugz_options_page_next_auto_preload']);
+
         if ($this->zlib_enabled) {
             add_action('admin_menu', [$this, 'cugz_register_options_page']);
         }
@@ -292,6 +294,18 @@ class GzipCache
         }
 
         add_filter('plugin_row_meta', [$this, 'cugz_plugin_row_meta'], 10, 2);
+    }
+
+    /**
+     * Displays a message on the options page with the next scheduled auto preload, if applicable.
+     */
+    public function cugz_options_page_next_auto_preload()
+    {
+        if ($cugz_cron_auto_preload = wp_next_scheduled('cugz_cron_auto_preload')) {
+            $dt = new \DateTime("@{$cugz_cron_auto_preload}");
+            $dt->setTimezone(wp_timezone());
+            echo '<strong>Next auto preload:</strong> <code>'.esc_html($dt->format('F j, Y, g:i a')).'</code>';
+        }
     }
 
     /**
