@@ -1077,6 +1077,45 @@ class GzipCache
     }
 
     /**
+     * Accepts a string of CSS and replaces relative URL's with absolute ULR's.
+     *
+     * @param string $css     CSS content
+     * @param string $css_url URL to css file
+     *
+     * @return string returns CSS with corrected URL's before minifying and placing inline
+     */
+    protected function fix_css_urls($css, $css_url)
+    {
+        return preg_replace_callback('/url\((["\']?)(?!data:|https?:|\/\/)([^"\')]+)(["\']?)\)/i', function ($matches) use ($css_url) {
+            $quote = $matches[1];
+            $relative_path = $matches[2];
+            $parsed_url = wp_parse_url($css_url);
+            $base_url = $parsed_url['scheme'].'://'.$parsed_url['host'];
+
+            if (!empty($parsed_url['port'])) {
+                $base_url .= ':'.$parsed_url['port'];
+            }
+
+            $base_path = rtrim(dirname($parsed_url['path']), '/').'/';
+            $full_path = $base_path.$relative_path;
+            $normalized_path = [];
+            $parts = explode('/', $full_path);
+
+            foreach ($parts as $part) {
+                if ('..' === $part) {
+                    array_pop($normalized_path);
+                } elseif ('.' !== $part && '' !== $part) {
+                    $normalized_path[] = $part;
+                }
+            }
+
+            $final_path = '/'.implode('/', $normalized_path);
+
+            return 'url('.$quote.$base_url.$final_path.$quote.')';
+        }, $css);
+    }
+
+    /**
      * Accepts a string on unminified CSS and removes spaces and comments.
      *
      * @param string $css unminified CSS
@@ -1149,6 +1188,8 @@ class GzipCache
                     // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
                     error_log('Error: Unable to retrieve css content from '.$css_link);
                 }
+
+                $css_content = $this->fix_css_urls($css_content, $css_link);
 
                 $html = preg_replace('/<link[^>]+rel\s*=\s*[\'"]?stylesheet[\'"]?[^>]+href\s*=\s*[\'"]?'.preg_quote($css_link, '/').'[\'"]?[^>]*>/i', '<style>'.$this->cugz_minify_css($css_content).'</style>', $html);
             }
