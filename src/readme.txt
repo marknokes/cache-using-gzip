@@ -4,7 +4,7 @@ Tags: gzip, cache, speed, performance, nginx
 Requires at least: 6.4.3
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 2.8.7
+Stable tag: 2.8.8
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -83,6 +83,10 @@ download the required configuration from the plugin settings page (Tools => Cach
 Automatic updates should work generally smoothly, but we still recommend you back up your site.
 
 == Changelog ==
+
+= 2.8.8 =
+Bugfix: when move css/js inline chosen relative url's in minified css files break
+Improvement: add message to options page with next auto preload date and time
 
 = 2.8.7 =
 Bugfix: getting default option value fails if get_option returns bool false
