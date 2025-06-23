@@ -4,7 +4,7 @@ namespace CUGZ;
 
 /*
  * Plugin Name: Cache Using Gzip
- * Version: 2.8.8
+ * Version: 2.8.9
  * Description: Creates gzip files on your server to immensly improve page speed for site visitors
  * Author: Cache Using Gzip
  * Author URI: https://wpgzipcache.com

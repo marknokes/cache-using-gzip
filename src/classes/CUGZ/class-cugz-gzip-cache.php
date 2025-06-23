@@ -60,6 +60,14 @@ class GzipCache
             'default_value' => 'never',
             'sanitize_callback' => 'sanitize_text_field',
         ],
+        'cugz_auto_preload_only' => [
+            'name' => 'Only auto preload these types:',
+            'type' => 'plugin_post_types',
+            'is_enterprise' => true,
+            'description' => 'Ctrl + click to select/deselect multiple post types.',
+            'default_value' => ['page'],
+            'sanitize_callback' => 'CUGZ\GzipCache::cugz_sanitize_array',
+        ],
         'cugz_never_cache' => [
             'name' => 'Never cache:',
             'type' => 'text',
@@ -99,6 +107,13 @@ class GzipCache
      * @var array
      */
     public $cugz_auto_preload = [];
+
+    /**
+     * Determine which post types to auto preload.
+     *
+     * @var array
+     */
+    public $cugz_auto_preload_only = [];
 
     /**
      * Whether to place CSS inline on cached page.
@@ -261,7 +276,10 @@ class GzipCache
 
         add_action('cugz_post_options_page', [$this, 'cugz_post_options_page']);
 
-        add_action('cugz_cron_auto_preload', [$this, 'cugz_preload_cache']);
+        add_action('cugz_cron_auto_preload', function () {
+            $this->cugz_plugin_post_types = $this->cugz_auto_preload_only;
+            $this->cugz_preload_cache(false);
+        });
 
         add_action('cugz_options_page_next_auto_preload', [$this, 'cugz_options_page_next_auto_preload']);
 
@@ -527,7 +545,7 @@ class GzipCache
         foreach ($post_types as $post_type) {
             $key = array_search($post_type, $value);
 
-            $selected = selected($post_type, $value[$key], false);
+            $selected = isset($value[$key]) ? selected($post_type, $value[$key], false) : '';
 
             $options .= "<option value='{$post_type}' {$selected}>{$post_type}</option>";
         }
@@ -741,10 +759,14 @@ class GzipCache
      * Handles preloading.
      *
      * This function cleans the cache directory, caches the blog and all other relevent pages
+     *
+     * @param mixed $clean_dir
      */
-    public function cugz_preload_cache()
+    public function cugz_preload_cache($clean_dir = true)
     {
-        $this->cugz_clean_dir();
+        if ($clean_dir) {
+            $this->cugz_clean_dir();
+        }
 
         self::update_option('cugz_status', 'processing');
 

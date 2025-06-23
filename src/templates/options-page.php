@@ -102,7 +102,7 @@ use CUGZ\GzipCachePluginExtras;
 
                             case 'plugin_post_types':
                                 ?>
-										<select name='<?php echo esc_attr($name); ?>[]' multiple='multiple'>
+										<select name='<?php echo esc_attr($name); ?>[]' multiple='multiple' <?php echo esc_attr($disabled); ?>>
 										<?php
                                 $options = [
                                     'option' => [
@@ -166,6 +166,7 @@ use CUGZ\GzipCachePluginExtras;
 					<li>Use the bulk edit menu for pages, posts, etc. to cache a selection</li>
 					<li><span class="pro-name">Enterprise feature</span>: Specify a date before which items will not be cached</li>
 					<li><span class="pro-name">Enterprise feature</span>: Enterprise priority support</li>
+					<li><span class="pro-name">Enterprise feature</span>: Select individual post types for preloading</li>
 				</ul>
 				<a class="button button-primary" target="_blank" rel="noopener" href="<?php echo esc_url(self::$learn_more); ?>">Compare Plans</a>
 			</div>
