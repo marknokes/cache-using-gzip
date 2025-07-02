@@ -216,9 +216,9 @@ class GzipCache
 
         $this->site_url = get_site_url();
 
-        $this->host = getenv('HTTP_HOST');
+        $this->host = $this->get_host();
 
-        $this->cache_dir = strtok(WP_CONTENT_DIR.'/cugz_gzip_cache/'.$this->host, ':');
+        $this->cache_dir = WP_CONTENT_DIR.'/cugz_gzip_cache/'.$this->host;
 
         $this->settings_url = admin_url(self::$options_page_url);
 
@@ -1321,6 +1321,30 @@ class GzipCache
         }
 
         return 'Unknown';
+    }
+
+    /**
+     * Retrieves the hostname for use in the cache directory file path.
+     *
+     * @return string the hostname or localhost if unable to determine
+     */
+    private function get_host()
+    {
+        if (!empty($_SERVER['HTTP_HOST'])) {
+            $host = $_SERVER['HTTP_HOST'];
+        } elseif ($env_host = getenv('HTTP_HOST')) {
+            $host = $env_host;
+        } elseif (!empty($_SERVER['SERVER_NAME'])) {
+            $host = $_SERVER['SERVER_NAME'];
+        } else {
+            $host = 'localhost';
+        }
+
+        $host = strtolower($host);
+        $host = preg_replace('/:\d+$/', '', $host); // remove port if present
+        $host = preg_replace('/[^a-z0-9\-\.]/', '_', $host); // replace unwanted chars
+
+        return $host;
     }
 
     /**
