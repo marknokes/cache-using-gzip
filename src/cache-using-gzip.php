@@ -13,7 +13,7 @@ namespace CUGZ;
  * WC requires at least: 8.6.0
  * WC tested up to: 9.3.3
  * Requires at least: 6.4.3
- * Tested up to: 6.8
+ * Tested up to: 6.9
  * Requires PHP: 7.4
  */
 if (!defined('ABSPATH')) {
