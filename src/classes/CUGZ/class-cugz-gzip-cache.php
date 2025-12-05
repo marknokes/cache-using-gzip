@@ -1001,6 +1001,30 @@ class GzipCache
     }
 
     /**
+     * Gets the directory name if wordpress is installed in a subdir.
+     *     *
+     * @return string name of subdirectory or /
+     */
+    protected function get_install_dir()
+    {
+        $wp_path = ABSPATH;
+
+        $doc_root = rtrim($_SERVER['DOCUMENT_ROOT'], '/').'/';
+
+        $subdirectory = '/';
+
+        if (0 === strpos($wp_path, $doc_root)) {
+            $relative_path = trim(str_replace($doc_root, '', $wp_path), '/');
+
+            if ('' !== $relative_path) {
+                $subdirectory = '/'.$relative_path.'/';
+            }
+        }
+
+        return $subdirectory;
+    }
+
+    /**
      * Modifies the .htaccess file for the plugin.
      *
      * @param int $action Optional. Determines whether to add or remove the plugin's directives from the .htaccess file.
@@ -1053,6 +1077,8 @@ class GzipCache
             $template = plugin_dir_url(CUGZ_PLUGIN_PATH).'templates/htaccess.sample';
 
             $directives = $wp_filesystem->get_contents($template);
+
+            $directives = str_replace('[CUGZ_REWRITE_BASE]', $this->get_install_dir(), $directives);
 
             $new_content = $directives."\n\n".$existing_content;
 
