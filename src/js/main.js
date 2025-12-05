@@ -45,7 +45,7 @@ jQuery(document).ready(function($) {
 	function updateStatus() {
 		$.ajax({
 			'type': "POST",
-			'url': "/wp-admin/admin-ajax.php",
+			'url': cugz_ajax_var.ajax_url,
 			'data': {
 				'action': 'cugz_callback',
 				'nonce': cugz_ajax_var.nonce,
@@ -90,7 +90,7 @@ jQuery(document).ready(function($) {
 
 			$.ajax({
 				'type': "POST",
-				'url': "/wp-admin/admin-ajax.php",
+				'url': cugz_ajax_var.ajax_url,
 				'data': {
 					'action': 'cugz_callback',
 					'nonce': cugz_ajax_var.nonce,
@@ -105,7 +105,7 @@ jQuery(document).ready(function($) {
 				},
 				error: function() {
 
-					location.href = "/wp-admin/" + cugz_ajax_var.options_page_url;
+					location.href = cugz_ajax_var.admin_url + cugz_ajax_var.options_page_url;
 
 				}
 			});
@@ -131,7 +131,7 @@ jQuery(document).ready(function($) {
 		
 		$.ajax({
 			'type': "POST",
-			'url': "/wp-admin/admin-ajax.php",
+			'url': cugz_ajax_var.ajax_url,
 			'data': {
 				'action': 'cugz_callback',
 				'nonce': cugz_ajax_var.nonce,

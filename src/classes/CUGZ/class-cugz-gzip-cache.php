@@ -502,7 +502,7 @@ class GzipCache
             'is_settings_page' => false,
             'options_page_url' => self::$options_page_url,
             'admin_url' => admin_url(),
-            'ajax_url' => admin_url( 'admin-ajax.php' ),
+            'ajax_url' => admin_url('admin-ajax.php'),
         ];
 
         wp_enqueue_script('cugz_js', plugin_dir_url(CUGZ_PLUGIN_PATH).'js/main.min.js', ['jquery'], $this->plugin_version, true);

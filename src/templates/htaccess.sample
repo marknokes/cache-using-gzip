@@ -109,7 +109,7 @@ FileETag None
 
 <IfModule mod_rewrite.c>
 	RewriteEngine On
-	RewriteBase /
+	RewriteBase [CUGZ_REWRITE_BASE]
 	RewriteCond %{HTTPS} on [OR]
 	RewriteCond %{SERVER_PORT} ^443$ [OR]
 	RewriteCond %{HTTP:X-Forwarded-Proto} https
@@ -123,7 +123,7 @@ FileETag None
 	RewriteCond %{HTTP:Cookie} !(wordpress_logged_in_.+|wp-postpass_|wptouch_switch_toggle|comment_author_|comment_author_email_) [NC]
 	RewriteCond %{REQUEST_URI} !^(/(.+/)?feed/?.+/?|/(?:.+/)?embed/|/(index\.php/)?wp\-json(/.*|$))$ [NC]
 	RewriteCond %{HTTP_USER_AGENT} !^(facebookexternalhit).* [NC]
-	RewriteCond "%{DOCUMENT_ROOT}/wp-content/cugz_gzip_cache/%{ENV:GZ_HOST}%{REQUEST_URI}/index%{ENV:GZ_SSL}.html%{ENV:GZ_ENC}" -f
-	RewriteRule .* "/wp-content/cugz_gzip_cache/%{ENV:GZ_HOST}%{REQUEST_URI}/index%{ENV:GZ_SSL}.html%{ENV:GZ_ENC}" [L]
+	RewriteCond "%{DOCUMENT_ROOT}[CUGZ_REWRITE_BASE]wp-content/cugz_gzip_cache/%{ENV:GZ_HOST}%{REQUEST_URI}/index%{ENV:GZ_SSL}.html%{ENV:GZ_ENC}" -f
+	RewriteRule .* "[CUGZ_REWRITE_BASE]wp-content/cugz_gzip_cache/%{ENV:GZ_HOST}%{REQUEST_URI}/index%{ENV:GZ_SSL}.html%{ENV:GZ_ENC}" [L]
 </IfModule>
 # END Cache Using Gzip
