@@ -1009,7 +1009,7 @@ class GzipCache
     {
         $wp_path = ABSPATH;
 
-        $doc_root = isset($_SERVER['DOCUMENT_ROOT']) ? rtrim(sanitize_text_field(wp_unslash($_SERVER['DOCUMENT_ROOT'])), '/').'/': '/';
+        $doc_root = isset($_SERVER['DOCUMENT_ROOT']) ? rtrim(sanitize_text_field(wp_unslash($_SERVER['DOCUMENT_ROOT'])), '/').'/' : '/';
 
         $subdirectory = '/';
 
