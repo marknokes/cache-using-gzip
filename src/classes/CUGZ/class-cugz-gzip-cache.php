@@ -11,7 +11,7 @@ class GzipCache
      *
      * @var string
      */
-    public static $options_group = 'cugz_options_group';
+    public static $cugz_options_group = 'cugz_options_group';
 
     /**
      * Link to compare plans.
@@ -25,14 +25,14 @@ class GzipCache
      *
      * @var string
      */
-    public static $options_page_url = 'tools.php?page=cugz_gzip_cache';
+    public static $cugz_options_page_url = 'tools.php?page=cugz_gzip_cache';
 
     /**
      * Plugin options array.
      *
      * @var array
      */
-    public static $options = [
+    public static $cugz_options = [
         'cugz_plugin_post_types' => [
             'name' => 'Cache these types:',
             'type' => 'plugin_post_types',
@@ -220,7 +220,7 @@ class GzipCache
 
         $this->cache_dir = WP_CONTENT_DIR.'/cugz_gzip_cache/'.$this->host;
 
-        $this->settings_url = admin_url(self::$options_page_url);
+        $this->settings_url = admin_url(self::$cugz_options_page_url);
 
         $this->cugz_set_props_from_options();
 
@@ -335,7 +335,7 @@ class GzipCache
      */
     public static function cugz_on_update_option($old_value, $new_value, $option_name)
     {
-        if (array_key_exists($option_name, self::$options)) {
+        if (array_key_exists($option_name, self::$cugz_options)) {
             wp_cache_delete($option_name, 'options');
         }
 
@@ -365,7 +365,7 @@ class GzipCache
      */
     public static function cugz_get_option($option_name)
     {
-        if (isset(self::$options[$option_name]) && self::cugz_skip_option(self::$options[$option_name])) {
+        if (isset(self::$cugz_options[$option_name]) && self::cugz_skip_option(self::$cugz_options[$option_name])) {
             return false;
         }
 
@@ -375,7 +375,7 @@ class GzipCache
             $option_value = get_option($option_name);
 
             if (false === $option_value) {
-                $option_value = self::$options[$option_name]['default_value'] ?? false;
+                $option_value = self::$cugz_options[$option_name]['default_value'] ?? false;
 
                 add_option($option_name, $option_value, '', false);
             }
@@ -414,7 +414,7 @@ class GzipCache
             require_once ABSPATH.'/wp-admin/includes/file.php';
         }
 
-        $url = wp_nonce_url(self::$options_page_url, 'cache-using-gzip');
+        $url = wp_nonce_url(self::$cugz_options_page_url, 'cache-using-gzip');
 
         $creds = request_filesystem_credentials($url, '', false, false, null);
 
@@ -459,7 +459,7 @@ class GzipCache
             'type' => 'success',
         ], 3600);
 
-        foreach (self::$options as $option => $array) {
+        foreach (self::$cugz_options as $option => $array) {
             if (self::cugz_skip_option($array)) {
                 continue;
             }
@@ -477,7 +477,7 @@ class GzipCache
 
         $this->cugz_delete_cache_dir(dirname($this->cache_dir));
 
-        foreach (self::$options as $option => $array) {
+        foreach (self::$cugz_options as $option => $array) {
             wp_cache_delete($option, 'options');
 
             delete_option($option);
@@ -500,7 +500,7 @@ class GzipCache
         $local_args = [
             'nonce' => wp_create_nonce('ajax-nonce'),
             'is_settings_page' => false,
-            'options_page_url' => self::$options_page_url,
+            'options_page_url' => self::$cugz_options_page_url,
             'admin_url' => admin_url(),
             'ajax_url' => admin_url('admin-ajax.php'),
         ];
@@ -649,7 +649,7 @@ class GzipCache
      */
     public function cugz_get_links($post = null)
     {
-        global $GzipCachePluginExtras;
+        global $CUGZ_GzipCachePluginExtras;
 
         $is_preload = null === $post;
 
@@ -671,8 +671,8 @@ class GzipCache
             $cat_ids = wp_get_post_categories($post_id);
         }
 
-        if (isset($GzipCachePluginExtras)) {
-            $links = $GzipCachePluginExtras->get_archive_links($links, $term_ids, $cat_ids);
+        if (isset($CUGZ_GzipCachePluginExtras)) {
+            $links = $CUGZ_GzipCachePluginExtras->get_archive_links($links, $term_ids, $cat_ids);
         }
 
         return $links;
@@ -687,9 +687,9 @@ class GzipCache
      */
     public function cugz_create_folder_structure_from_url($url)
     {
-        global $GzipCachePluginExtras;
+        global $CUGZ_GzipCachePluginExtras;
 
-        if (isset($GzipCachePluginExtras) && $GzipCachePluginExtras->cugz_never_cache($url)) {
+        if (isset($CUGZ_GzipCachePluginExtras) && $CUGZ_GzipCachePluginExtras->cugz_never_cache($url)) {
             return false;
         }
 
@@ -887,14 +887,14 @@ class GzipCache
      */
     public function cugz_register_settings()
     {
-        foreach (self::$options as $option => $array) {
+        foreach (self::$cugz_options as $option => $array) {
             if ('skip_settings_field' === $array['type'] || self::cugz_skip_option($array)) {
                 continue;
             }
 
             // phpcs:ignore PluginCheck.CodeAnalysis.SettingSanitization.register_settingDynamic
             register_setting(
-                self::$options_group,
+                self::$cugz_options_group,
                 $option,
                 [
                     'type' => gettype($array['default_value']),
@@ -957,11 +957,11 @@ class GzipCache
     }
 
     /**
-     * Sets class properties using self::$options and adds an update_option_{option_name} hook for each one.
+     * Sets class properties using self::$cugz_options and adds an update_option_{option_name} hook for each one.
      */
     protected function cugz_set_props_from_options()
     {
-        foreach (self::$options as $option => $array) {
+        foreach (self::$cugz_options as $option => $array) {
             if (self::cugz_skip_option($array)) {
                 continue;
             }
@@ -1009,7 +1009,7 @@ class GzipCache
     {
         $wp_path = ABSPATH;
 
-        $doc_root = rtrim($_SERVER['DOCUMENT_ROOT'], '/').'/';
+        $doc_root = isset($_SERVER['DOCUMENT_ROOT']) ? rtrim(sanitize_text_field(wp_unslash($_SERVER['DOCUMENT_ROOT'])), '/').'/': '/';
 
         $subdirectory = '/';
 
@@ -1359,11 +1359,11 @@ class GzipCache
     private function get_host()
     {
         if (!empty($_SERVER['HTTP_HOST'])) {
-            $host = $_SERVER['HTTP_HOST'];
+            $host = sanitize_text_field(wp_unslash($_SERVER['HTTP_HOST']));
         } elseif ($env_host = getenv('HTTP_HOST')) {
             $host = $env_host;
         } elseif (!empty($_SERVER['SERVER_NAME'])) {
-            $host = $_SERVER['SERVER_NAME'];
+            $host = sanitize_text_field(wp_unslash($_SERVER['SERVER_NAME']));
         } else {
             $host = 'localhost';
         }

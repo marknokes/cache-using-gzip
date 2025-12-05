@@ -30,14 +30,14 @@ define('CUGZ_PLUGIN_EXTRAS', class_exists(GzipCachePluginExtras::class));
 
 define('CUGZ_ENTERPRISE', class_exists(GzipCacheEnterprise::class));
 
-$GzipCache = new GzipCache();
+$CUGZ_GzipCache = new GzipCache();
 
-$GzipCachePluginExtras = CUGZ_PLUGIN_EXTRAS ? new GzipCachePluginExtras() : null;
+$CUGZ_GzipCachePluginExtras = CUGZ_PLUGIN_EXTRAS ? new GzipCachePluginExtras() : null;
 
-register_activation_hook(CUGZ_PLUGIN_PATH, [$GzipCache, 'cugz_plugin_activation']);
+register_activation_hook(CUGZ_PLUGIN_PATH, [$CUGZ_GzipCache, 'cugz_plugin_activation']);
 
-register_deactivation_hook(CUGZ_PLUGIN_PATH, [$GzipCache, 'cugz_plugin_deactivation']);
+register_deactivation_hook(CUGZ_PLUGIN_PATH, [$CUGZ_GzipCache, 'cugz_plugin_deactivation']);
 
-$GzipCache->cugz_add_actions();
+$CUGZ_GzipCache->cugz_add_actions();
 
-$GzipCache->cugz_add_filters();
+$CUGZ_GzipCache->cugz_add_filters();

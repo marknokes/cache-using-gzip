@@ -18,78 +18,78 @@ use CUGZ\GzipCachePluginExtras;
 			<h2>Cache Using Gzip Settings</h2>
 
 			<form method="post" action="options.php">
-				<?php settings_fields(self::$options_group); ?>
+				<?php settings_fields(self::$cugz_options_group); ?>
 				<table>
 					<?php
-                    foreach (self::$options as $option => $array) {
-                        if (isset($array['is_premium'])) {
-                            $is_premium = $array['is_premium'];
+                    foreach (self::$cugz_options as $cugz_option => $cugz_array) {
+                        if (isset($cugz_array['is_premium'])) {
+                            $cugz_is_premium = $cugz_array['is_premium'];
 
-                            $feature = 'Premium';
+                            $cugz_feature = 'Premium';
 
-                            $disabled = $is_premium && (!CUGZ_PLUGIN_EXTRAS || !GzipCachePluginExtras::cugz_onboarding_complete()) ? 'disabled' : '';
-                        } elseif (isset($array['is_enterprise'])) {
-                            $is_enterprise = $array['is_enterprise'];
+                            $cugz_disabled = $cugz_is_premium && (!CUGZ_PLUGIN_EXTRAS || !GzipCachePluginExtras::cugz_onboarding_complete()) ? 'disabled' : '';
+                        } elseif (isset($cugz_array['is_enterprise'])) {
+                            $cugz_is_enterprise = $cugz_array['is_enterprise'];
 
-                            $feature = 'Enterprise';
+                            $cugz_feature = 'Enterprise';
 
-                            $disabled = $is_enterprise && (!CUGZ_ENTERPRISE || !GzipCacheEnterprise::cugz_onboarding_complete()) ? 'disabled' : '';
+                            $cugz_disabled = $cugz_is_enterprise && (!CUGZ_ENTERPRISE || !GzipCacheEnterprise::cugz_onboarding_complete()) ? 'disabled' : '';
                         } else {
-                            $is_premium = $is_enterprise = false;
+                            $cugz_is_premium = $cugz_is_enterprise = false;
 
-                            $feature = $disabled = '';
+                            $cugz_feature = $cugz_disabled = '';
                         }
 
-                        if ('skip_settings_field' === $array['type']) {
+                        if ('skip_settings_field' === $cugz_array['type']) {
                             continue;
                         }
 
-                        $value = self::cugz_get_option($option);
+                        $cugz_value = self::cugz_get_option($cugz_option);
                         ?>
 						<tr>
 							<th>
-								<label for="<?php echo esc_attr($option); ?>"><?php echo esc_attr($array['name']); ?></label>
+								<label for="<?php echo esc_attr($cugz_option); ?>"><?php echo esc_attr($cugz_array['name']); ?></label>
 							</th>
 							<td>
 								<?php
 
-                                $name = !$disabled ? $option : '';
+                                $cugz_name = !$cugz_disabled ? $cugz_option : '';
 
-                        switch ($array['type']) {
+                        switch ($cugz_array['type']) {
                             case 'datepicker':
                                 ?>
-										<input type="text" id="datepicker" name="<?php echo esc_attr($name); ?>" value="<?php echo esc_attr($value); ?>" <?php echo esc_attr($disabled); ?> />
+										<input type="text" id="datepicker" name="<?php echo esc_attr($cugz_name); ?>" value="<?php echo esc_attr($cugz_value); ?>" <?php echo esc_attr($cugz_disabled); ?> />
 										<?php
                                 break;
 
                             case 'checkbox':
-                                $checked = checked(1, $value, false);
+                                $cugz_checked = checked(1, $cugz_value, false);
                                 ?>
-										<input type='checkbox' name='<?php echo esc_attr($name); ?>' value='1' <?php echo esc_attr($checked); ?> <?php echo esc_attr($disabled); ?> />
+										<input type='checkbox' name='<?php echo esc_attr($cugz_name); ?>' value='1' <?php echo esc_attr($cugz_checked); ?> <?php echo esc_attr($cugz_disabled); ?> />
 										<?php
                                 break;
 
                             case 'textarea':
                                 ?>
-										<textarea rows="10" cols="100" name="<?php echo esc_attr($name); ?>" id="<?php echo esc_attr($option); ?>" <?php echo esc_attr($disabled); ?>><?php echo esc_textarea($value); ?></textarea>
+										<textarea rows="10" cols="100" name="<?php echo esc_attr($cugz_name); ?>" id="<?php echo esc_attr($cugz_option); ?>" <?php echo esc_attr($cugz_disabled); ?>><?php echo esc_textarea($cugz_value); ?></textarea>
 										<?php
                                 break;
 
                             case 'select':
                                 ?>
-										<select name='<?php echo esc_attr($name); ?>'>
+										<select name='<?php echo esc_attr($cugz_name); ?>'>
 										<?php
-                                $options = '';
+                                $cugz_options = '';
 
-                                $value = $value ?: [];
+                                $cugz_value = $cugz_value ?: [];
 
-                                foreach ($array['options'] as $option) {
-                                    $selected = selected($option, $value, false);
+                                foreach ($cugz_array['options'] as $cugz_option) {
+                                    $cugz_selected = selected($cugz_option, $cugz_value, false);
 
-                                    $options .= "<option value='{$option}' {$selected}>{$option}</option>";
+                                    $cugz_options .= "<option value='{$cugz_option}' {$cugz_selected}>{$cugz_option}</option>";
                                 }
 
-                                echo wp_kses($options, [
+                                echo wp_kses($cugz_options, [
                                     'option' => [
                                         'value' => [],
                                         'selected' => [],
@@ -102,9 +102,9 @@ use CUGZ\GzipCachePluginExtras;
 
                             case 'plugin_post_types':
                                 ?>
-										<select name='<?php echo esc_attr($name); ?>[]' multiple='multiple' <?php echo esc_attr($disabled); ?>>
+										<select name='<?php echo esc_attr($cugz_name); ?>[]' multiple='multiple' <?php echo esc_attr($cugz_disabled); ?>>
 										<?php
-                                $options = [
+                                $cugz_options = [
                                     'option' => [
                                         'value' => [],
                                         'selected' => [],
@@ -112,9 +112,9 @@ use CUGZ\GzipCachePluginExtras;
                                 ];
 
                                 if (!CUGZ_PLUGIN_EXTRAS || !GzipCachePluginExtras::cugz_onboarding_complete()) {
-                                    echo wp_kses(self::cugz_get_post_type_select_options($value), $options);
+                                    echo wp_kses(self::cugz_get_post_type_select_options($cugz_value), $cugz_options);
                                 } else {
-                                    echo wp_kses(GzipCachePluginExtras::cugz_get_post_type_select_options($value), $options);
+                                    echo wp_kses(GzipCachePluginExtras::cugz_get_post_type_select_options($cugz_value), $cugz_options);
                                 }
                                 ?>
 										</select>
@@ -123,11 +123,11 @@ use CUGZ\GzipCachePluginExtras;
 
                             default:
                                 ?>
-										<input size="30" type="text" name="<?php echo esc_attr($name); ?>" id="<?php echo esc_attr($option); ?>" value="<?php echo esc_attr($value); ?>" <?php echo esc_attr($disabled); ?> />
+										<input size="30" type="text" name="<?php echo esc_attr($cugz_name); ?>" id="<?php echo esc_attr($cugz_option); ?>" value="<?php echo esc_attr($cugz_value); ?>" <?php echo esc_attr($cugz_disabled); ?> />
 										<?php
                                 break;
                         } ?>
-								<p class="description"><span class="pro-name"><?php echo $disabled ? esc_html($feature).' feature: ' : ''; ?></span><?php echo esc_html($array['description']); ?></p>
+								<p class="description"><span class="pro-name"><?php echo $cugz_disabled ? esc_html($cugz_feature).' feature: ' : ''; ?></span><?php echo esc_html($cugz_array['description']); ?></p>
 							</td>
 						</tr>
 					<?php } ?>
