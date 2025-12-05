@@ -4,7 +4,7 @@ Tags: gzip, cache, speed, performance, nginx
 Requires at least: 6.4.3
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 2.9.0
+Stable tag: 2.9.1
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -82,7 +82,10 @@ download the required configuration from the plugin settings page (Tools => Cach
 
 Automatic updates should work generally smoothly, but we still recommend you back up your site.
 
-== Changelog ==
+== Changelog =
+
+= 2.9.1 =
+Bugfix: Allow proper caching when WordPress is installed in a subdirectory
 
 = 2.9.0 =
 Bugfix: In specific environments, the hostname is undetermined, causing the wp-content directory to be deleted upon plugin deactivation
