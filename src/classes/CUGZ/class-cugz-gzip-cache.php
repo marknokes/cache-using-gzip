@@ -430,10 +430,10 @@ class GzipCache
      */
     public function cugz_dequeue_scripts()
     {
-        if (is_singular() && function_exists('wpcf7')) {
+        if (function_exists('wpcf7')) {
             global $post;
 
-            if (!has_shortcode($post->post_content, 'contact-form-7')) {
+            if ($post && !has_shortcode($post->post_content, 'contact-form-7')) {
                 wp_dequeue_style('contact-form-7');
 
                 wp_dequeue_script('contact-form-7');
