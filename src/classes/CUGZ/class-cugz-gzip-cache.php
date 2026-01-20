@@ -630,6 +630,8 @@ class GzipCache
                 $this->cugz_cache_page($url, $dir);
             }
         }
+
+        $this->cugz_cache_blog_page();
     }
 
     /**

@@ -4,7 +4,7 @@ Tags: gzip, cache, speed, performance, nginx
 Requires at least: 6.4.3
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 2.9.2
+Stable tag: 2.9.3
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -83,6 +83,9 @@ download the required configuration from the plugin settings page (Tools => Cach
 Automatic updates should work generally smoothly, but we still recommend you back up your site.
 
 == Changelog =
+
+= 2.9.3 =
+Bugfix: Under certain circumstances the homepage wasn't being cached when it was set to show latest posts
 
 = 2.9.2 =
 Improvement: Add turnstile to dequeue for non-cf7 pages
