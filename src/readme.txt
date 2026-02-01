@@ -1,6 +1,6 @@
 === Cache Using Gzip ===
 Contributors: marknokes
-Tags: gzip, cache, speed, performance, nginx
+Tags: cache, caching, performance, gzip, speed, page cache, site speed, html cache, server cache, http compression, apache, nginx
 Requires at least: 6.4.3
 Tested up to: 6.9
 Requires PHP: 7.4
@@ -8,50 +8,66 @@ Stable tag: 2.9.3
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Creates gzip files on your server to immensly improve page speed for site visitors
+Lightweight WordPress caching with gzip compression for faster page loads — no complicated settings.
 
 == Description ==
 
-The [Cache Using Gzip](https://wpgzipcache.com/) plugin for WordPress improves page speed for site visitors. Preload the
-cache in settings, download the required config settings and add to your Apache or Nginx server config, and all of
-your posts and pages will be delivered to site visitors blazingly fast!
+Instantly speed up your WordPress site with simple, lightweight gzip caching. Many users see faster Time to First Byte (TTFB) and reduced server load immediately after activation.
 
-= Cache Using Gzip Features =
-- Unlimited downloads
-- Unlimited domains 
+Cache Using Gzip is designed for users who want **noticeable performance improvements** without dealing with complex caching settings or bloated plugins. Activate it and enjoy faster page loads with minimal configuration.
 
-= Cache Using Gzip Premium Features =
-- Unlimited downloads
-- 1 domain
-- Support for custom post types
-- A cache link on posts and pages let you cache individual items on the fly
-- Cache WooCommerce products and product category/tag archives
-- Exclude a list of page slugs from ever being cached
-- Use the bulk edit menu for pages, posts, etc. to cache a selection 
+Most caching plugins try to do everything. Cache Using Gzip focuses on doing **one thing well** — serving fast, gzipped cached pages.
 
-= Cache Using Gzip Enterprise Features =
-- Unlimited downloads
-- Unlimited domains
-- Support for custom post types
-- A cache link on posts and pages let you cache individual items on the fly
-- Cache WooCommerce products and product category/tag archives
-- Exclude a list of page slugs from ever being cached
-- Use the bulk edit menu for pages, posts, etc. to cache a selection
-- Specify a date before which items will not be cached
-- Enterprise priority support 
+### Why use Cache Using Gzip?
 
-[Compare plans at https://wpgzipcache.com/compare-plans/](https://wpgzipcache.com/compare-plans/)
+* Faster page load times on the front end
+* Simple setup — no technical knowledge required
+* Lightweight and minimal
+* Works with Apache and Nginx
+* Ideal for beginners, bloggers, and shared hosting
+* Immediate performance improvements after activation
 
-== Frequently Asked Questions ==
+### How it works
 
-= Where can I report bugs? =
+The plugin generates static, gzipped versions of your pages and serves them directly to visitors, reducing file size and server processing for faster responses.
 
-Please report confirmed bugs on the Cache Using Gzip [github](https://github.com/marknokes/cache-using-gzip/issues/new?assignees=marknokes&labels=bug&template=bug_report.md) directly. Include any screenshots and as much detail as possible.
+No confusing options. No unnecessary features.
 
-= On what web servers can this plugin be installed =
+### Free version features
 
-The Cache Using Gzip plugin works on Apache and Nginx servers. After the plugin is intalled and activated, you may
-download the required configuration from the plugin settings page (Tools => Cache Using Gzip).
+* One-click caching
+* Gzip compression support
+* Static page caching
+* Compatible with most WordPress themes
+* Clean, simple admin interface
+
+### Premium version (optional)
+
+Upgrade to the premium version if you need more advanced control, including:
+
+* Advanced caching rules and exclusions
+* Additional performance optimizations
+* Priority support
+* Extra features for growing sites
+
+The free version delivers real value on its own — upgrade only when you need more control.
+
+### Server compatibility
+
+* Apache (.htaccess)
+* Nginx (configuration snippets provided)
+
+Clear setup instructions are included.
+
+### Who is this plugin for?
+
+* WordPress beginners
+* Bloggers and small business websites
+* Users on shared hosting
+* Anyone overwhelmed by complex caching plugins
+* Site owners who want fast results with minimal effort
+
+If Cache Using Gzip helps speed up your site, please consider leaving a review. It really helps the project grow.
 
 == Installation ==
 
@@ -61,7 +77,7 @@ download the required configuration from the plugin settings page (Tools => Cach
 * Apache or Nginx web server
 * PHP Version 7.4 or newer
 * PHP ZLIB extension enabled
-* The Cache Using Gzip plugin requires a "pretty" URL. Confirm your permalink structure is something other than "Plain" (Settings => Permalinks).
+* The Cache Using Gzip plugin requires Pretty permalinks. Confirm your permalink structure is something other than "Plain" (Settings => Permalinks).
 
 = Installation instructions =
 
@@ -70,13 +86,15 @@ download the required configuration from the plugin settings page (Tools => Cach
 3. Search for the **Cache Using Gzip** plugin.
 4. Click on **Install Now** and wait until the plugin is installed successfully.
 5. Activate the plugin by clicking **Activate** now on the success page.
-6. If you're running WordPress on an Apache server, the .htaccess file should be modified on activation. If it wasn't, visit the plugin settings page (Tools => Cache Using Gzip) to download the reqired apache/nginx config rules.
+6. If you're running WordPress on an Apache server, the .htaccess file should be modified on activation. If it wasn't, visit the plugin settings page (Tools => Cache Using Gzip) to download the required apache/nginx config rules.
 7. Add the rules to your .htaccess or nginx.conf, if necessary.
 
 == Screenshots ==
 
 1. Main settings screen
 2. Single page cache link (pro feature)
+3. Page speed before
+4. Page speed after
 
 == Upgrade Notice ==
 
