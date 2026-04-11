@@ -1,7 +1,5 @@
 <?php
 
-namespace CUGZ;
-
 /*
  * Plugin Name: Cache Using Gzip
  * Version: 2.9.3
@@ -16,6 +14,9 @@ namespace CUGZ;
  * Tested up to: 7
  * Requires PHP: 7.4
  */
+
+namespace CUGZ;
+
 if (!defined('ABSPATH')) {
     exit;
 }

@@ -2,6 +2,10 @@
 
 namespace CUGZ;
 
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 use Automattic\WooCommerce\Utilities\FeaturesUtil;
 
 class GzipCache
