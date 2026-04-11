@@ -2,7 +2,7 @@
 Contributors: marknokes
 Tags: cache, caching, performance, gzip, speed, page cache, site speed, html cache, server cache, http compression, apache, nginx
 Requires at least: 6.4.3
-Tested up to: 6.9
+Tested up to: 7
 Requires PHP: 7.4
 Stable tag: 2.9.3
 License: GPLv2
