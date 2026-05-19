@@ -2,14 +2,14 @@
 
 /*
  * Plugin Name: Cache Using Gzip
- * Version: 2.9.3
+ * Version: 2.9.4
  * Description: Creates gzip files on your server to immensly improve page speed for site visitors
  * Author: Cache Using Gzip
  * Author URI: https://wpgzipcache.com
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * WC requires at least: 8.6.0
- * WC tested up to: 9.3.3
+ * WC tested up to: 10.7.0
  * Requires at least: 6.4.3
  * Tested up to: 7
  * Requires PHP: 7.4

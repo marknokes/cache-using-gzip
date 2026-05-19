@@ -570,52 +570,73 @@ class GzipCache
      */
     public function cugz_transition_post_status($new_status, $old_status, $post)
     {
-        $status_array = [
-            'trash',
-            'draft',
-            'publish',
-        ];
-
+        // Ignore revisions/autosaves
         if (
-            'trash' === $old_status
-            || 'product' === $post->post_type
-            || !in_array($new_status, $status_array)
-            || !in_array($post->post_type, $this->cugz_plugin_post_types)
+            wp_is_post_revision($post->ID)
+            || wp_is_post_autosave($post->ID)
         ) {
             return;
         }
 
-        switch ($new_status) {
-            case 'trash':
-            case 'draft':
-                $clone = clone $post;
-
-                $clone->post_status = 'publish';
-
-                $permalink = str_replace('__trashed', '', get_permalink($clone));
-
-                if ($dir = $this->cugz_create_folder_structure_from_url($permalink)) {
-                    $this->cugz_clean_dir($dir);
-                }
-
-                break;
-
-            case 'publish':
-                $url = get_permalink($post);
-
-                if ($dir = $this->cugz_create_folder_structure_from_url($url)) {
-                    $this->cugz_cache_page($url, $dir);
-                }
-
-                break;
-
-            default:
-                // do nothing
-
-                break;
+        // Ignore unsupported post types
+        if (
+            'product' === $post->post_type
+            || !in_array($post->post_type, $this->cugz_plugin_post_types, true)
+        ) {
+            return;
         }
 
-        $this->cugz_refresh_archives($post);
+        // Ignore auto-drafts entirely
+        if ('auto-draft' === $old_status) {
+            return;
+        }
+
+        /*
+         * CACHE / PRELOAD
+         *
+         * Handles:
+         * - draft -> publish
+         * - future -> publish
+         * - publish -> publish
+         */
+        if ('publish' === $new_status) {
+            $url = get_permalink($post);
+
+            if ($dir = $this->cugz_create_folder_structure_from_url($url)) {
+                $this->cugz_cache_page($url, $dir);
+            }
+
+            $this->cugz_refresh_archives($post);
+
+            return;
+        }
+
+        /*
+         * CLEAR CACHE
+         *
+         * Handles:
+         * - publish -> draft
+         * - publish -> trash
+         * - publish -> private
+         */
+        if ('publish' === $old_status && 'publish' !== $new_status) {
+            $clone = clone $post;
+
+            // Force permalink generation for previously published URL
+            $clone->post_status = 'publish';
+
+            $permalink = str_replace(
+                '__trashed',
+                '',
+                get_permalink($clone)
+            );
+
+            if ($dir = $this->cugz_create_folder_structure_from_url($permalink)) {
+                $this->cugz_clean_dir($dir);
+            }
+
+            $this->cugz_refresh_archives($post);
+        }
     }
 
     /**

@@ -4,7 +4,7 @@ Tags: cache, caching, performance, gzip, speed, page cache, site speed, html cac
 Requires at least: 6.4.3
 Tested up to: 7
 Requires PHP: 7.4
-Stable tag: 2.9.3
+Stable tag: 2.9.4
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -101,6 +101,9 @@ If Cache Using Gzip helps speed up your site, please consider leaving a review. 
 Automatic updates should work generally smoothly, but we still recommend you back up your site.
 
 == Changelog =
+
+= 2.9.4 =
+Improvement: Prevent auto tag/category preloading on post preview
 
 = 2.9.3 =
 Bugfix: Under certain circumstances the homepage wasn't being cached when it was set to show latest posts
