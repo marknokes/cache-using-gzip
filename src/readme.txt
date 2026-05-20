@@ -1,8 +1,8 @@
 === Cache Using Gzip ===
 Contributors: marknokes
-Tags: cache, caching, performance, gzip, speed, page cache, site speed, html cache, server cache, http compression, apache, nginx
+Tags: cache, caching, performance, gzip, speed
 Requires at least: 6.4.3
-Tested up to: 7
+Tested up to: 7.0
 Requires PHP: 7.4
 Stable tag: 2.9.4
 License: GPLv2
