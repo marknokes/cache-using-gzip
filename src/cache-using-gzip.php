@@ -2,7 +2,7 @@
 
 /*
  * Plugin Name: Cache Using Gzip
- * Version: 2.9.4
+ * Version: 2.9.5
  * Description: Creates gzip files on your server to immensly improve page speed for site visitors
  * Author: Cache Using Gzip
  * Author URI: https://wpgzipcache.com
