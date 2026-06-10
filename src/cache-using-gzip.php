@@ -3,7 +3,7 @@
 /*
  * Plugin Name: Cache Using Gzip
  * Version: 2.9.5
- * Description: Creates gzip files on your server to immensly improve page speed for site visitors
+ * Description: Lightweight WordPress caching with gzip compression for faster page loads — no complicated settings.
  * Author: Cache Using Gzip
  * Author URI: https://wpgzipcache.com
  * License: GPL v2 or later
