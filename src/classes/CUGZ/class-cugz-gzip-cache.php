@@ -1031,7 +1031,7 @@ class GzipCache
 
     /**
      * Gets the directory name if wordpress is installed in a subdir.
-     *     *
+     *
      * @return string name of subdirectory or /
      */
     protected function get_install_dir()
@@ -1381,27 +1381,27 @@ class GzipCache
     }
 
     /**
-     * Retrieves the hostname for use in the cache directory file path.
+     * Get the hostname for a specific site.
      *
-     * @return string the hostname or localhost if unable to determine
+     * @param null|int $blog_id Site/blog ID. Defaults to current site.
+     *
+     * @return string
      */
-    private function get_host()
+    private function get_host($blog_id = null)
     {
-        if (!empty($_SERVER['HTTP_HOST'])) {
-            $host = sanitize_text_field(wp_unslash($_SERVER['HTTP_HOST']));
-        } elseif ($env_host = getenv('HTTP_HOST')) {
-            $host = $env_host;
-        } elseif (!empty($_SERVER['SERVER_NAME'])) {
-            $host = sanitize_text_field(wp_unslash($_SERVER['SERVER_NAME']));
-        } else {
-            $host = 'localhost';
+        if (is_multisite()) {
+            $site = get_site($blog_id ?: get_current_blog_id());
+
+            if ($site && !empty($site->domain)) {
+                return $site->domain;
+            }
         }
 
-        $host = strtolower($host);
-        $host = preg_replace('/:\d+$/', '', $host); // remove port if present
-        $host = preg_replace('/[^a-z0-9\-\.]/', '_', $host); // replace unwanted chars
+        $url = $blog_id
+            ? get_home_url($blog_id)
+            : home_url();
 
-        return $host;
+        return wp_parse_url($url, PHP_URL_HOST) ?: '';
     }
 
     /**
