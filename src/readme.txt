@@ -2,7 +2,7 @@
 Contributors: marknokes
 Tags: cache, caching, performance, gzip, speed
 Requires at least: 6.4.3
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 7.4
 Stable tag: 2.9.5
 License: GPLv2
