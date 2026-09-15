@@ -274,6 +274,8 @@ class GzipCache
 
         add_action('transition_post_status', [$this, 'cugz_transition_post_status'], 10, 3);
 
+        add_action('cugz_async_refresh_cache', [$this, 'cugz_async_refresh_cache'], 10, 3);
+
         add_action('admin_enqueue_scripts', [$this, 'cugz_enqueue_admin_scripts']);
 
         add_action('wp_enqueue_scripts', [$this, 'cugz_dequeue_scripts'], 21);
@@ -490,6 +492,10 @@ class GzipCache
         }
 
         wp_unschedule_event(wp_next_scheduled('cugz_cron_auto_preload'), 'cugz_cron_auto_preload');
+
+        wp_unschedule_hook('cugz_async_refresh_cache');
+
+        wp_unschedule_hook('cugz_async_refresh_product_cache');
     }
 
     /**
@@ -564,6 +570,11 @@ class GzipCache
     /**
      * This function handles the transition of a post's status.
      *
+     * Cache generation involves one or more HTTP requests per URL (the post
+     * itself, plus any archives), which can be slow. Rather than block the
+     * post save/publish request, the actual cache work is handed off to a
+     * background WP-Cron event so the editor gets an immediate response.
+     *
      * @param string $new_status the new status of the post
      * @param string $old_status the old status of the post
      * @param object $post       the post object
@@ -588,6 +599,52 @@ class GzipCache
 
         // Ignore auto-drafts entirely
         if ('auto-draft' === $old_status) {
+            return;
+        }
+
+        // Only these transitions require cache changes:
+        // draft/future/publish -> publish, or publish -> draft/trash/private
+        if ('publish' !== $new_status && 'publish' !== $old_status) {
+            return;
+        }
+
+        $this->cugz_schedule_async_refresh($post->ID, $new_status, $old_status);
+    }
+
+    /**
+     * Schedules a background WP-Cron event to refresh the cache for a post,
+     * then nudges cron to run right away instead of waiting for its next
+     * scheduled check.
+     *
+     * @param int    $post_id    the ID of the post to refresh
+     * @param string $new_status the new status of the post
+     * @param string $old_status the old status of the post
+     */
+    public function cugz_schedule_async_refresh($post_id, $new_status, $old_status)
+    {
+        $args = [$post_id, $new_status, $old_status];
+
+        if (!wp_next_scheduled('cugz_async_refresh_cache', $args)) {
+            wp_schedule_single_event(time(), 'cugz_async_refresh_cache', $args);
+        }
+
+        spawn_cron();
+    }
+
+    /**
+     * Background handler for 'cugz_async_refresh_cache'. Re-fetches the post
+     * (state may have changed since scheduling) and performs the actual
+     * cache/clear work that used to run inline on transition_post_status.
+     *
+     * @param int    $post_id    the ID of the post to refresh
+     * @param string $new_status the new status of the post at schedule time
+     * @param string $old_status the old status of the post at schedule time
+     */
+    public function cugz_async_refresh_cache($post_id, $new_status, $old_status)
+    {
+        $post = get_post($post_id);
+
+        if (!$post) {
             return;
         }
 
@@ -701,7 +758,12 @@ class GzipCache
         }
 
         if (isset($CUGZ_GzipCachePluginExtras)) {
-            $links = $CUGZ_GzipCachePluginExtras->get_archive_links($links, $term_ids, $cat_ids);
+            // Only refresh WooCommerce product category archives during a
+            // full preload or when refreshing an actual product — an
+            // unrelated post/page publish has no bearing on them.
+            $include_product_archives = $is_preload || method_exists($post, 'get_id');
+
+            $links = $CUGZ_GzipCachePluginExtras->get_archive_links($links, $term_ids, $cat_ids, $include_product_archives);
         }
 
         return $links;
