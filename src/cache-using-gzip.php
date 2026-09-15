@@ -2,7 +2,7 @@
 
 /*
  * Plugin Name: Cache Using Gzip
- * Version: 2.9.5
+ * Version: 2.9.6
  * Description: Lightweight WordPress caching with gzip compression for faster page loads — no complicated settings.
  * Author: Cache Using Gzip
  * Author URI: https://wpgzipcache.com
