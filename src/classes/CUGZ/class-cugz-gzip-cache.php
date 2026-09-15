@@ -84,7 +84,7 @@ class GzipCache
             'name' => 'Cache archives on preload, update, publish:',
             'type' => 'checkbox',
             'is_premium' => true,
-            'description' => 'This could increase preload time significantly if you have many categories/tags',
+            'description' => 'Preloading is done in the background via WP Cron.',
             'default_value' => 0,
             'sanitize_callback' => 'CUGZ\GzipCache::cugz_sanitize_number',
         ],
