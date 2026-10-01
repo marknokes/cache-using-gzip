@@ -4,7 +4,7 @@ Tags: cache, caching, performance, gzip, speed
 Requires at least: 6.4.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.9.6
+Stable tag: 2.9.7
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -102,8 +102,11 @@ Automatic updates should work generally smoothly, but we still recommend you bac
 
 == Changelog =
 
+= 2.9.7 =
+Improvement: Honor DONOTCACHEPAGE contstant for WooCommerce and other plugin support
+
 = 2.9.6 =
-Move cache generation into a WP-Cron background job during edit/publish
+Improvement: Move cache generation into a WP-Cron background job during edit/publish
 
 = 2.9.5 =
 Improvement: Create more reliable get_host method used in creating file paths.
