@@ -58,6 +58,14 @@ if ($https = "on") {
     set $gz_cache_hsts 1;
 }
 
+# Behind a proxy, load balancer or Cloudflare Tunnel, nginx itself receives plain HTTP
+# and $https is empty. Trust X-Forwarded-Proto so the -https cache file is found
+# (matches the X-Forwarded-Proto check in the Apache rules).
+if ($http_x_forwarded_proto = "https") {
+    set $gz_cache_https_prefix "-https";
+    set $gz_cache_hsts 1;
+}
+
 # If HSTS is disabled, unset HSTS
 if ($gz_cache_hsts = "0") {
     set $gz_cache_hsts_value "";
