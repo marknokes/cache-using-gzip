@@ -284,6 +284,8 @@ class GzipCache
 
         add_action('admin_init', [$this, 'cugz_register_settings']);
 
+        add_action('admin_init', [$this, 'cugz_maybe_update_htaccess']);
+
         add_action('wp_ajax_cugz_callback', [$this, 'cugz_callback']);
 
         add_action('before_woocommerce_init', [$this, 'cugz_wc_declare_compatibility']);
@@ -509,6 +511,8 @@ class GzipCache
 
             delete_option($option);
         }
+
+        delete_option('cugz_htaccess_version');
 
         wp_unschedule_event(wp_next_scheduled('cugz_cron_auto_preload'), 'cugz_cron_auto_preload');
 
@@ -1261,6 +1265,69 @@ class GzipCache
         }
 
         return true;
+    }
+
+    /**
+     * Replaces the plugin's existing .htaccess block with the current template.
+     *
+     * The block is only written on activation, so after a plugin update it
+     * would otherwise stay stale until the plugin was reactivated.
+     *
+     * @return bool true if the block is current (or there is none to update), false if it could not be rewritten
+     */
+    protected function cugz_refresh_htaccess()
+    {
+        $this->cugz_get_filesystem();
+
+        global $wp_filesystem;
+
+        $file_path = ABSPATH.'.htaccess';
+
+        if (!$wp_filesystem || !file_exists($file_path)) {
+            return true;
+        }
+
+        $existing_content = $wp_filesystem->get_contents($file_path);
+
+        $start_tag = "# BEGIN {$this->plugin_name}";
+
+        $end_tag = "# END {$this->plugin_name}";
+
+        $start_pos = strpos((string) $existing_content, $start_tag);
+
+        $end_pos = strpos((string) $existing_content, $end_tag);
+
+        // No block of ours (e.g. nginx, or removed by hand): nothing to refresh.
+        if (false === $start_pos || false === $end_pos || $end_pos < $start_pos) {
+            return true;
+        }
+
+        $directives = $wp_filesystem->get_contents(dirname(CUGZ_PLUGIN_PATH).'/templates/htaccess.sample');
+
+        if (!$directives) {
+            return false;
+        }
+
+        $directives = str_replace('[CUGZ_REWRITE_BASE]', $this->get_install_dir(), $directives);
+
+        $new_content = substr($existing_content, 0, $start_pos).trim($directives).substr($existing_content, $end_pos + strlen($end_tag));
+
+        return false !== $wp_filesystem->put_contents($file_path, $new_content);
+    }
+
+    /**
+     * Refreshes the .htaccess block once after each plugin version change.
+     * The version is only recorded on success, so a failed write is retried.
+     */
+    public function cugz_maybe_update_htaccess()
+    {
+        if (get_option('cugz_htaccess_version') === $this->plugin_version) {
+            return;
+        }
+
+        if ($this->cugz_refresh_htaccess()) {
+            update_option('cugz_htaccess_version', $this->plugin_version, false);
+        }
     }
 
     /**

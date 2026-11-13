@@ -12,13 +12,20 @@ AddDefaultCharset UTF-8
 
 FileETag None
 
+# Flag responses served straight from the plugin's cache. WordPress Site Health
+# recognises "X-Cache-Status: HIT" as evidence that a page cache is active.
+<IfModule mod_headers.c>
+	<FilesMatch "^index(-https)?\.html(_gz)?$">
+		Header set X-Cache-Status "HIT"
+	</FilesMatch>
+</IfModule>
+
 <IfModule mod_alias.c>
 
 	<FilesMatch "\.(html|htm|rtf|rtx|txt|xsd|xsl|xml)$">
 		<IfModule mod_headers.c>
 			Header unset Pragma
 			Header append Cache-Control "public"
-			Header unset Last-Modified
 		</IfModule>
 	</FilesMatch>
 

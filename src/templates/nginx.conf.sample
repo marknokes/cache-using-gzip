@@ -127,6 +127,7 @@ location ~ /wp-content/cugz_gzip_cache/.*html$ {
     etag on;
     add_header Vary "Accept-Encoding, Cookie";
     add_header Cache-Control "no-cache, no-store, must-revalidate";
+    add_header X-Cache-Status "HIT";
     add_header X-Cache-Serving-Static $serving_static;
     add_header X-Cache-Reason $gz_cache_reason;
     add_header X-Cache-File $gz_cache_file;
@@ -150,6 +151,7 @@ location ~ /wp-content/cugz_gzip_cache/.*_gz$ {
     add_header Content-Encoding gzip;
     add_header Vary "Accept-Encoding, Cookie";
     add_header Cache-Control "no-cache, no-store, must-revalidate";
+    add_header X-Cache-Status "HIT";
     add_header X-Cache-Serving-Static $serving_static;
     add_header X-Cache-Reason $gz_cache_reason;
     add_header X-Cache-File $gz_cache_file;

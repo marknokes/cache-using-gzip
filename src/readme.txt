@@ -4,7 +4,7 @@ Tags: cache, caching, performance, gzip, speed
 Requires at least: 6.4.3
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.9.8
+Stable tag: 2.9.9
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -101,6 +101,9 @@ If Cache Using Gzip helps speed up your site, please consider leaving a review. 
 Automatic updates should work generally smoothly, but we still recommend you back up your site.
 
 == Changelog =
+
+= 2.9.9 =
+Improvement: Send Last-Modified and X-Cache-Status headers on cached pages so WordPress Site Health detects the page cache. The plugin's .htaccess rules are refreshed automatically on update.
 
 = 2.9.8 =
 Bugfix: Failed body fetch writes emtpy cache file
