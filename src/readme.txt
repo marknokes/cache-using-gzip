@@ -103,7 +103,8 @@ Automatic updates should work generally smoothly, but we still recommend you bac
 == Changelog =
 
 = 2.9.9 =
-Improvement: Send Last-Modified and X-Cache-Status headers on cached pages so WordPress Site Health detects the page cache. The plugin's .htaccess rules are refreshed automatically on update.
+Improvement: Send Last-Modified and X-Cache-Status headers on cached pages so WordPress Site Health detects the page cache. The plugin's .htaccess rules are refreshed automatically on update. Nginx users can optionally add `add_header X-Cache-Status "HIT";` to the two cache-file locations in their config (see the downloadable config on the settings page).
+Bugfix: Premium/Enterprise license check reported success for an unregistered domain when the registration server's reply was an error or unexpected. The notice now says the domain is not registered, or that it could not be verified.
 
 = 2.9.8 =
 Bugfix: Failed body fetch writes emtpy cache file
