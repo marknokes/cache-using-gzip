@@ -879,9 +879,12 @@ class GzipCache
 
         $args['headers'] = [self::CACHE_REQUEST_HEADER => '1'];
 
-        $response = wp_remote_get($url, $args);
+        $html = $this->cugz_fetch_body($url, $args);
 
-        $html = wp_remote_retrieve_body($response);
+        // A failed or blank response must never create or overwrite a cache file.
+        if (false === $html) {
+            return false;
+        }
 
         if (false !== strpos($html, self::DO_NOT_CACHE_MARKER)) {
             $this->cugz_remove_cached_page($dir);
@@ -896,6 +899,35 @@ class GzipCache
         $wp_filesystem->put_contents($dir.$this->cugz_get_filename(), $html);
 
         return $wp_filesystem->put_contents($dir.$this->cugz_get_filename('_gz'), gzencode($html, 9)) ? true : false;
+    }
+
+    /**
+     * Fetches a URL and returns its body, or false if the request failed,
+     * did not return HTTP 200, or came back empty. Failures are logged.
+     *
+     * @param string $url  the URL to fetch
+     * @param array  $args optional wp_remote_get arguments
+     *
+     * @return false|string the response body, or false on failure
+     */
+    protected function cugz_fetch_body($url, $args = [])
+    {
+        $response = wp_remote_get($url, $args);
+
+        if (is_wp_error($response)) {
+            $reason = $response->get_error_message();
+        } elseif (200 !== wp_remote_retrieve_response_code($response)) {
+            $reason = 'HTTP '.wp_remote_retrieve_response_code($response);
+        } elseif ('' === trim(wp_remote_retrieve_body($response))) {
+            $reason = 'empty response body';
+        } else {
+            return wp_remote_retrieve_body($response);
+        }
+
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+        error_log(sprintf('Cache Using Gzip: not caching %s (%s)', $url, $reason));
+
+        return false;
     }
 
     /**
@@ -1373,11 +1405,10 @@ class GzipCache
 
         foreach ($matches_css_links[1] as $css_link) {
             if ($this->cugz_is_local_script($css_link)) {
-                $css_content = wp_remote_retrieve_body(wp_remote_get($css_link));
+                $css_content = $this->cugz_fetch_body($css_link);
 
                 if (false === $css_content) {
-                    // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-                    error_log('Error: Unable to retrieve css content from '.$css_link);
+                    continue;
                 }
 
                 $css_content = $this->fix_css_urls($css_content, $css_link);
@@ -1388,11 +1419,10 @@ class GzipCache
 
         return preg_replace_callback($pattern_script_link, function ($matches) {
             if ($this->cugz_is_local_script($matches[1])) {
-                $script_content = wp_remote_retrieve_body(wp_remote_get($matches[1]));
+                $script_content = $this->cugz_fetch_body($matches[1]);
 
                 if (false === $script_content) {
-                    // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
-                    error_log('Error: Unable to retrieve script content from '.$matches[1]);
+                    return $matches[0];
                 }
 
                 if (0 === strpos($script_content, 'import')) {
